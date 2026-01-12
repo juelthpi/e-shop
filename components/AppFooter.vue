@@ -83,6 +83,7 @@
     </NuxtLink>
     <div
       class="mobile-menu-item d-flex align-items-center flex-column py-3 cursor-pointer"
+      ref="searchToggle"
       @click="showSearch = !showSearch"
       :class="{ active: showSearch }"
     >
@@ -115,7 +116,7 @@
 
   <!-- Small Search Popup -->
   <Transition name="slide-up">
-    <div v-if="showSearch" class="search-popup shadow-lg p-3 rounded-top-3">
+    <div v-if="showSearch" ref="searchPopup" class="search-popup shadow-lg p-3 rounded-top-3">
       <div class="input-group">
         <input type="text" class="form-control" placeholder="Search products..." autofocus>
         <button class="btn btn-brand text-white" type="button"><i class="fas fa-search"></i></button>
@@ -125,10 +126,29 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 const showSearch = ref(false);
+const searchPopup = ref(null);
+const searchToggle = ref(null);
+
+const handleClickOutside = (event) => {
+  if (showSearch.value && 
+      searchPopup.value && !searchPopup.value.contains(event.target) &&
+      searchToggle.value && !searchToggle.value.contains(event.target)) {
+    showSearch.value = false;
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('click', handleClickOutside);
+});
 </script>
+
 
 <style scoped>
 .search-popup {

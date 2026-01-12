@@ -3,7 +3,11 @@
     <div class="tab-inner-item">
       <div class="border-1 rounded-3 position-relative overflow-hidden">
         <div class="swiper product-list-show-slider" @mouseenter="startAutoplay" @mouseleave="stopAutoplay">
+          <div v-if="!isMounted" class="placeholder-img overflow-hidden zoom">
+             <img :src="product.images[0]" alt="img" class="w-100 rounded-3">
+          </div>
           <Swiper
+            v-else
             :modules="[Autoplay]"
             :loop="true"
             :slides-per-view="1"
@@ -14,7 +18,7 @@
           >
             <SwiperSlide v-for="(img, index) in product.images" :key="index" class="overflow-hidden zoom">
               <NuxtLink to="/product-details">
-                <img :src="img" alt="img" class="w-100 rounded-3">
+                <img :src="img" alt="img" class="w-100 rounded-3" loading="lazy">
               </NuxtLink>
             </SwiperSlide>
           </Swiper>
@@ -41,7 +45,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Autoplay } from 'swiper/modules';
 
@@ -55,6 +59,7 @@ defineProps({
 
 const swiperInstance = ref(null);
 const isWishlist = ref(false);
+const isMounted = ref(false);
 
 const toggleWishlist = () => {
   isWishlist.value = !isWishlist.value;
@@ -72,7 +77,12 @@ const startAutoplay = () => {
 const stopAutoplay = () => {
   swiperInstance.value?.autoplay.stop();
 };
+
+onMounted(() => {
+  isMounted.value = true;
+});
 </script>
+
 
 <style scoped>
 /* Scoped styles can be added here if needed */

@@ -1,94 +1,110 @@
 <template>
   <div class="page-container">
-    <div class="product-wrapper">
-      <!-- Gallery Column -->
-      <ProductGallery :images="currentImages" />
+    <div v-if="!isMounted">
+       <ProductDetailsSkeleton />
+    </div>
+    <div v-else>
+      <div class="product-wrapper">
+        <!-- Gallery Column -->
+        <ProductGallery :images="currentImages" :video="currentVideo" />
 
-      <!-- Info Column -->
-      <ProductInfo 
-        :product="productData" 
-        :selectedColorId="selectedColorId"
-        :selectedSize="selectedSize"
-        v-model:quantity="quantity"
-        @color-selected="handleColorChange"
-        @size-selected="handleSizeChange"
-      />
 
-      <!-- Buy Column (Simulation) -->
-      <div class="buy-column">
-        <div class="buy-box">
-          <h2>${{ totalPrice }}</h2>
+        <!-- Info Column -->
+        <ProductInfo 
+          :product="productData" 
+          :selectedColorId="selectedColorId"
+          :selectedSize="selectedSize"
+          v-model:quantity="quantity"
+          @color-selected="handleColorChange"
+          @size-selected="handleSizeChange"
+        />
+
+        <!-- Buy Column (Simulation) -->
+        <div class="buy-column">
+          <div class="buy-box">
+            <h2>${{ totalPrice }}</h2>
+            
+            <p class="delivery">FREE delivery <strong>Tomorrow</strong></p>
+            <div class="stock">In Stock</div>
           
-          <p class="delivery">FREE delivery <strong>Tomorrow</strong></p>
-          <div class="stock">In Stock</div>
-       
-          <div class="shipping-info mb-3 mt-3">
-            <div class="shipping-grid">
-              <div class="text-gray">Ships from</div>
-              <div class="text-black">E-commerce</div>
-              
-              <div class="text-gray">Sold by</div>
-              <NuxtLink to="#" class="text-brand text-decoration-none hover-underline">PRETTYGARDEN</NuxtLink>
-              
-              <div class="text-gray">Returns</div>
-              <NuxtLink to="#" class="text-brand text-decoration-none hover-underline">30-day refund/replacement</NuxtLink>
-              
-              <div class="text-gray">Packaging</div>
-              <div class="text-black">Ships in product packaging</div>
-            </div>
-          </div>
-          
-          <button class="btn-buy add-to-cart">Add to Cart</button>
-          <button class="btn-buy buy-now">Buy Now</button>
-
-          <!-- Seller Info Box -->
-          <div class="seller-box mt-3">
-            <div class="d-flex align-items-center gap-3">
-              <div class="seller-logo">
-                <img src="https://placehold.co/50x50" alt="Seller Logo">
+            <div class="shipping-info mb-3 mt-3">
+              <div class="shipping-grid">
+                <div class="text-gray">Ships from</div>
+                <div class="text-black">E-commerce</div>
+                
+                <div class="text-gray">Sold by</div>
+                <NuxtLink to="#" class="text-brand text-decoration-none hover-underline">PRETTYGARDEN</NuxtLink>
+                
+                <div class="text-gray">Returns</div>
+                <NuxtLink to="#" class="text-brand text-decoration-none hover-underline">30-day refund/replacement</NuxtLink>
+                
+                <div class="text-gray">Packaging</div>
+                <div class="text-black">Ships in product packaging</div>
               </div>
-              <div class="seller-details">
-                <h6 class="seller-name mb-1">Tech World US</h6>
-                <div class="seller-rating">
-                  <i class="fa-solid fa-star"></i>
-                  <i class="fa-solid fa-star"></i>
-                  <i class="fa-solid fa-star"></i>
-                  <i class="fa-solid fa-star"></i>
-                  <i class="fa-solid fa-star-half-stroke"></i>
-                  <span class="ms-1 text-muted">(4.8)</span>
+            </div>
+            
+            <button class="btn-buy add-to-cart">Add to Cart</button>
+            <button class="btn-buy buy-now">Buy Now</button>
+
+            <!-- Seller Info Box -->
+            <div class="seller-box mt-3">
+              <div class="d-flex align-items-center gap-3">
+                <div class="seller-logo">
+                  <img src="https://placehold.co/50x50" alt="Seller Logo">
+                </div>
+                <div class="seller-details">
+                  <h6 class="seller-name mb-1">Tech World US</h6>
+                  <div class="seller-rating">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star-half-stroke"></i>
+                    <span class="ms-1 text-muted">(4.8)</span>
+                  </div>
                 </div>
               </div>
+              <div class="mt-2 text-center">
+                <NuxtLink to="#" class="btn-visit-store">Visit Store</NuxtLink>
+              </div>
             </div>
-            <div class="mt-2 text-center">
-              <NuxtLink to="#" class="btn-visit-store">Visit Store</NuxtLink>
-            </div>
+        
           </div>
-      
         </div>
       </div>
-    </div>
-    
-    <!-- Description and Reviews -->
-    <ProductDescriptionReviews />
+      
+      <!-- Description and Reviews -->
+      <ProductDescriptionReviews />
 
-    <!-- Similar Products -->
-    <div class="mt-5 container">
-      <div class="section-title mb-4 d-flex align-items-center justify-content-between">
-        <h4 class="m-0 fw-bold">Similar Products</h4>
-        <NuxtLink to="/" class="text-decoration-none text-brand fw-bold">See All</NuxtLink>
+      <!-- Similar Products -->
+      <div class="mt-5 container">
+        <div class="section-title mb-4 d-flex align-items-center justify-content-between">
+          <h4 class="m-0 fw-bold">Similar Products</h4>
+          <NuxtLink to="/" class="text-decoration-none text-brand fw-bold">See All</NuxtLink>
+        </div>
+        <SimpleProductSlider 
+          :items="similarProducts" 
+          :config="similarProductConfig" 
+        />
       </div>
-      <SimpleProductSlider 
-        :items="similarProducts" 
-        :config="similarProductConfig" 
-      />
     </div>
   </div>
 </template>
 
+
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+
+const isMounted = ref(false);
+
+onMounted(() => {
+  setTimeout(() => {
+    isMounted.value = true;
+  }, 800);
+});
 
 const productData = {
+
   name: 'Sony WH-1000XM5 Wireless Industry Leading Noise Canceling Headphones with Auto NC Optimizer',
   price: '398.00',
   ratingCount: '12,453',
@@ -120,7 +136,8 @@ const productData = {
         'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1500&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1583394838336-acd977736f90?q=80&w=1500&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1484704849700-f032a568e944?q=80&w=1500&auto=format&fit=crop'
-      ]
+      ],
+      video: 'https://www.w3schools.com/html/mov_bbb.mp4' // Added sample video
     },
     {
       id: 'silver',
@@ -131,7 +148,8 @@ const productData = {
         'https://images.unsplash.com/photo-1585298723682-7115561c51b7?q=80&w=1500&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1545127398-14699f92334b?q=80&w=1500&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1491927570842-0261e477d937?q=80&w=1500&auto=format&fit=crop'
-      ]
+      ],
+      video: 'https://www.w3schools.com/html/movie.mp4' // Added sample video
     },
     {
       id: 'midnight-blue',
@@ -142,8 +160,10 @@ const productData = {
         'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=1500&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1506220926022-cc5c12acdb35?q=80&w=1500&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1599666505317-7bb0a99c5898?q=80&w=1500&auto=format&fit=crop'
-      ]
+      ],
+      video: 'https://www.w3schools.com/html/mov_bbb.mp4' // Added sample video
     }
+
   ]
 };
 
@@ -156,9 +176,15 @@ const currentImages = computed(() => {
   return color ? color.images : [];
 });
 
+const currentVideo = computed(() => {
+  const color = productData.colors.find(c => c.id === selectedColorId.value);
+  return color ? color.video : null;
+});
+
 const handleColorChange = (newColorId) => {
   selectedColorId.value = newColorId;
 };
+
 
 const handleSizeChange = (newSize) => {
   selectedSize.value = newSize;
@@ -258,15 +284,37 @@ const similarProductConfig = {
 
 
 /* Tablet & Mobile Capabilities */
+@media (max-width: 1299px) {
+  .product-wrapper {
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+   .product-wrapper {
+    flex-direction: column;
+  }
+
+  /* Make gallery and info full width */
+  .product-wrapper > * {
+    flex: 0 0 100%;
+  }
+
+  .buy-box {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-buy {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+}
 @media (max-width: 991px) {
   .page-container {
     padding: 20px;
   }
   
-  .product-wrapper {
-    flex-wrap: wrap;
-    gap: 20px;
-  }
+
   
   .buy-column {
     flex: 0 0 100%;
@@ -290,32 +338,18 @@ const similarProductConfig = {
     flex: 1;
     margin-bottom: 0;
   }
-}
-
-@media (max-width: 767px) {
-  .page-container {
+    .page-container {
     padding: 10px;
   }
-
-  .product-wrapper {
-    flex-direction: column;
-  }
-
-  /* Make gallery and info full width */
-  .product-wrapper > * {
-    flex: 0 0 100%;
-  }
-
-  .buy-box {
+    .buy-box {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .btn-buy {
-    width: 100%;
-    margin-bottom: 10px;
-  }
+
 }
+
+ 
 
 .hover-underline:hover {
   text-decoration: underline !important;

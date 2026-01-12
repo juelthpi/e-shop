@@ -1,7 +1,11 @@
 <template>
   <section class="hero-section position-relative">
     <div class="hero-area">
+      <div v-if="!isMounted" class="skeleton-container">
+        <Skeleton height="500px" border-radius="0" />
+      </div>
       <Swiper
+        v-else
         :modules="[Autoplay, EffectFade]"
         :loop="true"
         :slides-per-view="1"
@@ -20,6 +24,7 @@
         </SwiperSlide>
       </Swiper>
     </div>
+
     <div class="d-flex justify-content-center">
       <!-- search -->
       <div class="header-search-wrapper position-absolute hero-search">
@@ -34,7 +39,7 @@
               <option value="sports">Sports</option>
             </select>
           </div>
-          <input type="text" placeholder="Search products...">
+          <input type="text" placeholder="Search products..." class="w-100">
           <button>Search</button>
         </div>
       </div>
@@ -48,6 +53,7 @@ import { Swiper, SwiperSlide } from 'swiper/vue';
 import { onMounted, ref } from 'vue';
 
 const selectRef = ref(null);
+const isMounted = ref(false);
 
 const autoResizeSelect = () => {
   const select = selectRef.value;
@@ -65,10 +71,34 @@ const autoResizeSelect = () => {
 }
 
 onMounted(() => {
+  isMounted.value = true;
   autoResizeSelect();
 });
 </script>
 
 <style scoped>
-/* Scoped styles if any specific tweaks needed, otherwise handled by global CSS */
+.skeleton-container {
+  width: 100%;
+  height: 500px;
+  overflow: hidden;
+}
+
+@media all and (max-width: 1199px) {
+  .skeleton-container {
+    height: 400px;
+  }
+}
+
+@media all and (max-width: 991px) {
+  .skeleton-container {
+    height: 300px;
+  }
+}
+
+@media all and (max-width: 767px) {
+  .skeleton-container {
+    height: 200px;
+  }
+}
 </style>
+

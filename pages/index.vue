@@ -43,19 +43,19 @@
         </div>
         <div class="row gy-2 mt-3 gx-md-2 gx-1">
  <div class="col-3">
-            <div class="feature-box-item rounded-3 py-3 px-1 px-md-2 text-center shadow-1 d-sm-flex align-items-center gap-2 bg-white justify-content-center">
+            <div class="h-100 feature-box-item rounded-3 py-2 px-1 px-md-2 text-center shadow-1 d-sm-flex align-items-center gap-2 bg-white justify-content-center">
               <img src="/assets/images/icons/cash-on-delivery.svg" class="max-width-42" alt="icon">
               <h6>Cash On Delivery</h6>
             </div>
           </div>
           <div class="col-3">
-            <div class="feature-box-item rounded-3 py-3 px-1 px-md-2 text-center shadow-1 d-sm-flex align-items-center gap-2 bg-white justify-content-center">
+            <div class="h-100 feature-box-item rounded-3 py-2 px-1 px-md-2 text-center shadow-1 d-sm-flex align-items-center gap-2 bg-white justify-content-center">
               <img src="/assets/images/icons/instant-return.svg" class="max-width-42" alt="icon">
               <h6>Instant Return</h6>
             </div>
           </div>
           <div class="col-3">
-            <div class="feature-box-item rounded-3 py-3 px-1 px-md-2 text-center shadow-1 d-sm-flex align-items-center gap-2 bg-white justify-content-center">
+            <div class="h-100 feature-box-item rounded-3 py-2 px-1 px-md-2 text-center shadow-1 d-sm-flex align-items-center gap-2 bg-white justify-content-center">
               <img src="/assets/images/icons/delivery.svg" class="max-width-42" alt="icon">
               <h6>Delivery Within <span class="text-brand">48hrs</span></h6>
             </div>
@@ -75,13 +75,13 @@
       <div class="container">
         <div class="row gy-4">
           <div class="col-md-6">
-            <div class="zoom overflow-hidden">
-              <nuxt-link to="#"><img src="/assets/images/banners/banner-1.png" alt="img" class="w-100 rounded-3"></nuxt-link>
+            <div class="zoom overflow-hidden banner-placeholder">
+              <nuxt-link to="#"><img src="/assets/images/banners/banner-1.png" alt="img" class="w-100 rounded-3" loading="lazy"></nuxt-link>
             </div>
           </div>
           <div class="col-md-6">
-            <div class="zoom overflow-hidden">
-              <nuxt-link to="#"><img src="/assets/images/banners/banner-2.png" alt="img" class="w-100 rounded-3"></nuxt-link>
+            <div class="zoom overflow-hidden banner-placeholder">
+              <nuxt-link to="#"><img src="/assets/images/banners/banner-2.png" alt="img" class="w-100 rounded-3" loading="lazy"></nuxt-link>
             </div>
           </div>
         </div>
@@ -100,13 +100,14 @@
             />
           </div>
           <div class="col-md-12">
-            <div class="zoom overflow-hidden">
-              <nuxt-link to="#"><img src="/assets/images/banners/4.jpg" alt="img" class="w-100 rounded-3"></nuxt-link>
+            <div class="zoom overflow-hidden banner-placeholder">
+              <nuxt-link to="#"><img src="/assets/images/banners/4.jpg" alt="img" class="w-100 rounded-3" loading="lazy"></nuxt-link>
             </div>
           </div>
         </div>
       </div>
     </section>
+
 
     <!-- Category Tabs -->
     <CategoryTabs />

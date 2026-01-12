@@ -29,6 +29,7 @@ html {
   font-size: 62.5%;
 }
 
+
 body {
   font-family: "Inter", sans-serif;
   font-size: 15px;
@@ -190,6 +191,13 @@ img {
   width: 100%;
   height: auto;
 }
+
+.banner-placeholder {
+  background: #f0f0f0;
+  min-height: 200px;
+  border-radius: 10px;
+}
+
 
 .border-1 {
   border: 1px solid #ddd;
@@ -378,7 +386,7 @@ img {
   left: 0;
   right: 0;
   margin: auto;
-  z-index: 9;
+  z-index: 99;
   bottom: 10px;
   background-color: white;
   box-shadow: rgb(179, 174, 174) 0px 1px 6px;
@@ -789,7 +797,7 @@ img {
 @media all and (max-width: 767px) {
   .feature-box-item h6 {
     font-size: 8px;
-    line-height: 16px;
+    line-height: 12px;
   }
 
   footer {
@@ -820,6 +828,7 @@ img {
 
   .p-lg {
     font-size: 14px;
+    line-height: 18px;
   }
 
   .rating li i {
@@ -839,9 +848,7 @@ img {
     font-size: 16px;
   }
 
-  .feature-box-item h6 {
-    font-size: 14px;
-  }
+
 
   .feature-box-item p {
     font-size: 12px;

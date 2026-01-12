@@ -1,6 +1,11 @@
 <template>
   <div class="swiper hot-banner-slider">
+    <div v-if="!isMounted" class="banner-skeleton-grid">
+      <Skeleton height="400px" border-radius="15px" width="70%" />
+      <Skeleton height="400px" border-radius="15px" width="30%" />
+    </div>
     <Swiper
+      v-else
       :modules="[Autoplay]"
       :loop="true"
       :centered-slides="true"
@@ -20,14 +25,41 @@
       </SwiperSlide>
     </Swiper>
   </div>
+
+
 </template>
 
 <script setup>
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Autoplay } from 'swiper/modules';
+import { ref, onMounted } from 'vue';
+
+const isMounted = ref(false);
+
+onMounted(() => {
+  isMounted.value = true;
+});
 </script>
 
 <style scoped>
-/* CSS from style.css handled globally, but ensuring height style matches logic */
-/* .hot-banner-slider .swiper-slide img { height: 400px; } ... */
+.banner-skeleton-grid {
+  display: flex;
+  gap: 20px;
+  height: 400px;
+  overflow: hidden;
+  justify-content: center;
+}
+
+@media all and (max-width: 1199px) {
+  .banner-skeleton-grid {
+    height: 300px;
+  }
+}
+
+@media all and (max-width: 991px) {
+  .banner-skeleton-grid {
+    height: auto;
+  }
+}
 </style>
+

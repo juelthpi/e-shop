@@ -3,7 +3,10 @@
     <div class="container">
       <div class="row">
         <div class="col-md-12">
-          <div class="tabs-wrapper mb-4 border-1 rounded-3 shadow-1  py-2">
+          <div v-if="!isMounted" class="mb-4">
+            <Skeleton height="50px" border-radius="10px" />
+          </div>
+          <div v-else class="tabs-wrapper mb-4 border-1 rounded-3 shadow-1  py-2">
              <Swiper
                 :modules="[Navigation]"
                 :slides-per-view="'auto'"
@@ -33,9 +36,13 @@
                <i class="fa-solid fa-angle-right"></i>
             </div>
           </div>
+
           <div class="tab-content" id="pills-tabContent">
             <div class="tab-pane fade show active" role="tabpanel">
-              <div class="grid-container-1">
+              <div v-if="!isMounted" class="grid-container-1">
+                <ProductSkeleton v-for="n in 10" :key="n" />
+              </div>
+              <div v-else class="grid-container-1">
                 <ProductCard 
                   v-for="product in displayedProducts" 
                   :key="`${currentTab}-${product.id}`" 
@@ -44,7 +51,7 @@
               </div>
                 
               <!-- load more button -->
-              <div class="d-flex justify-content-center" v-if="hasMore">
+              <div class="d-flex justify-content-center" v-if="hasMore && isMounted">
                 <div class="d-inline-block mt-4">
                   <button class="primary-btn" @click="loadMore">Load More <i class="fa-solid fa-spinner"></i></button>
                 </div>
@@ -52,17 +59,21 @@
             </div>
           </div>
         </div>
+
+
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
+
+const isMounted = ref(false);
 
 const { generateProducts } = useProducts();
 
@@ -110,7 +121,12 @@ const hasMore = computed(() => {
 const loadMore = () => {
     displayLimit.value += 10;
 };
+
+onMounted(() => {
+  isMounted.value = true;
+});
 </script>
+
 
 <style scoped>
 .nav-link {

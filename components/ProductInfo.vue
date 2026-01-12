@@ -171,7 +171,7 @@ onUnmounted(() => {
 <style scoped>
 .product-info {
   flex: 1;
-  padding: 0 20px;
+ 
 }
 
 .breadcrumb {

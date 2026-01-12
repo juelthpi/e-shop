@@ -1,13 +1,13 @@
 <template>
   <BaseSlider :config="config" :custom-class="customClass">
-    <SwiperSlide v-for="item in items" :key="item.id">
-      <nuxt-link to="#">
-        <div class="position-relative bg-white rounded-3 zoom shadow-1">
+    <SwiperSlide v-for="item in items" :key="item.id" class="h-auto">
+      <nuxt-link to="#" class="h-100 d-block text-decoration-none">
+        <div class="position-relative bg-white rounded-3 zoom shadow-1 h-100 d-flex flex-column">
           <div class="overflow-hidden">
             <img :src="item.image" alt="img" class="w-100 rounded-2">
           </div>
-          <p class="p-lg bg-white p-1 p-md-3 pb-0 text-black">{{ item.name }}</p>
-          <ul class="d-flex align-items-center gap-1 rating justify-content-center pb-4">
+          <p class="p-lg bg-white p-1 p-md-3 pb-0 text-black flex-grow-1">{{ item.name }}</p>
+          <ul class="d-flex align-items-center gap-1 rating justify-content-center pb-4 mt-auto">
             <li v-for="r in 5" :key="r"><i class="fa-solid fa-star"></i></li>
             <li class="text-brand fw-bold">({{ item.reviews }})</li>
           </ul>
@@ -17,6 +17,7 @@
         </div>
       </nuxt-link>
     </SwiperSlide>
+
   </BaseSlider>
 </template>
 
