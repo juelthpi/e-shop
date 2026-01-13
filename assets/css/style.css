@@ -1,5 +1,5 @@
 :root {
-  /* --brand: #bd115d; */
+
   --black: #191919;
   --brand: #452829;
   --yellow: #ffd814;
@@ -10,7 +10,7 @@
 }
 
 .bg-brand-2 {
-  background: #bd115e24;
+  background: color-mix(in srgb, var(--brand) 15%, transparent);
 }
 
 .text-brand {

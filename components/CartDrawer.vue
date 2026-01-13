@@ -61,9 +61,9 @@
             <h6 class="mb-0 fw-medium text-black">Subtotal</h6>
             <h6 class="mb-0 fw-medium text-black">${{ subtotal.toFixed(2) }}</h6>
           </div>
-          <button class="primary-btn w-100 justify-content-center mb-2 mt-3">
+          <NuxtLink to="/checkout" class="primary-btn w-100 py-3 rounded-pill fw-bold text-uppercase mb-2 text-decoration-none d-flex justify-content-center" @click="toggleCartDrawer">
             Process to Checkout
-          </button>
+          </NuxtLink>
           <p class="text-muted text-center small mb-0 mt-2 px-4" style="font-size: 11px;">
              Shipping, Taxes & Discount Calculate At Checkout
           </p>
@@ -146,7 +146,7 @@ const { cart, isCartOpen, toggleCartDrawer, removeFromCart, updateQuantity, subt
 }
 
 .remove-btn {
-  background: #fff0f0; /* Pinkish background */
+  background: color-mix(in srgb, var(--brand) 8%, transparent); /* Light brand tint */
   border: none;
   color: #ff4d4d;
   font-size: 12px;
@@ -157,7 +157,7 @@ const { cart, isCartOpen, toggleCartDrawer, removeFromCart, updateQuantity, subt
 }
 
 .remove-btn:hover {
-  background: #ffe5e5;
+  background: color-mix(in srgb, var(--brand) 15%, transparent);
 }
 
  

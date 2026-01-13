@@ -1,7 +1,7 @@
 <template>
   <BaseSlider :config="config" :custom-class="customClass">
     <SwiperSlide v-for="item in items" :key="item.id" class="h-auto">
-      <nuxt-link to="#" class="h-100 d-block text-decoration-none">
+      <nuxt-link to="/product-details" class="h-100 d-block text-decoration-none">
         <div class="position-relative bg-white rounded-3 zoom shadow-1 h-100 d-flex flex-column">
           <div class="overflow-hidden">
             <img :src="item.image" alt="img" class="w-100 rounded-2">

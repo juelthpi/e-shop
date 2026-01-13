@@ -76,12 +76,12 @@
         <div class="row gy-4">
           <div class="col-md-6">
             <div class="zoom overflow-hidden banner-placeholder">
-              <nuxt-link to="#"><img src="/assets/images/banners/banner-1.png" alt="img" class="w-100 rounded-3" loading="lazy"></nuxt-link>
+              <nuxt-link to="/category"><img src="/assets/images/banners/banner-1.png" alt="img" class="w-100 rounded-3" loading="lazy"></nuxt-link>
             </div>
           </div>
           <div class="col-md-6">
             <div class="zoom overflow-hidden banner-placeholder">
-              <nuxt-link to="#"><img src="/assets/images/banners/banner-2.png" alt="img" class="w-100 rounded-3" loading="lazy"></nuxt-link>
+              <nuxt-link to="/category"><img src="/assets/images/banners/banner-2.png" alt="img" class="w-100 rounded-3" loading="lazy"></nuxt-link>
             </div>
           </div>
         </div>
@@ -101,7 +101,7 @@
           </div>
           <div class="col-md-12">
             <div class="zoom overflow-hidden banner-placeholder">
-              <nuxt-link to="#"><img src="/assets/images/banners/4.jpg" alt="img" class="w-100 rounded-3" loading="lazy"></nuxt-link>
+              <nuxt-link to="/category"><img src="/assets/images/banners/4.jpg" alt="img" class="w-100 rounded-3" loading="lazy"></nuxt-link>
             </div>
           </div>
         </div>

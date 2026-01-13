@@ -19,9 +19,11 @@
       }"
     >
       <SwiperSlide v-for="n in 5" :key="n">
-        <div class="product-show-design-1 zoom">
-          <img :src="`/assets/images/banners/${(n % 3) + 1}.jpg`" alt="img" class="w-100">
-        </div>
+        <NuxtLink to="/category" class="text-decoration-none">
+          <div class="product-show-design-1 zoom">
+            <img :src="`/assets/images/banners/${(n % 3) + 1}.jpg`" alt="img" class="w-100">
+          </div>
+        </NuxtLink>
       </SwiperSlide>
     </Swiper>
   </div>

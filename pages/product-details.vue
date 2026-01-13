@@ -47,7 +47,7 @@
             </div>
             
             <button class="btn-buy add-to-cart" @click="handleAddToCart">Add to Cart</button>
-            <button class="btn-buy buy-now">Buy Now</button>
+            <button class="btn-buy buy-now" @click="handleBuyNow">Buy Now</button>
 
             <!-- Success Animation Popup -->
             <Transition name="pop">
@@ -121,6 +121,12 @@ const handleAddToCart = () => {
   setTimeout(() => {
     showSuccessPopup.value = false;
   }, 2000);
+};
+
+const handleBuyNow = () => {
+  const color = productData.colors.find(c => c.id === selectedColorId.value);
+  addToCart(productData, color, selectedSize.value, quantity.value);
+  navigateTo('/checkout');
 };
 
 const breadcrumbItems = [
