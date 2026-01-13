@@ -143,6 +143,26 @@ p {
   background-color: rgba(211, 211, 211, 0.32);
 }
 
+.category-sidebar {
+  width: 280px;
+  padding: 10px;
+  box-sizing: border-box;
+  border-radius: 10px;
+}
+
+.category-content {
+  width: calc(100% - 280px);
+}
+
+.breadcrumb ul li {
+  font-size: 14px;
+}
+
+.breadcrumb ul li:last-child {
+  opacity: 0.8;
+  color: var(--brand-color);
+}
+
 .tab-inner-item .heart-box {
   position: absolute;
 

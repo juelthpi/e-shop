@@ -4,6 +4,9 @@
        <ProductDetailsSkeleton />
     </div>
     <div v-else>
+      <div class="container mb-4">
+        <AppBreadcrumb :items="breadcrumbItems" />
+      </div>
       <div class="product-wrapper">
         <!-- Gallery Column -->
         <ProductGallery :images="currentImages" :video="currentVideo" />
@@ -96,6 +99,12 @@
 import { ref, computed, onMounted } from 'vue';
 
 const isMounted = ref(false);
+
+const breadcrumbItems = [
+    { name: 'Home', link: '/' },
+    { name: 'Category', link: '/category' },
+    { name: 'Product Details', link: '' }
+];
 
 onMounted(() => {
   setTimeout(() => {
