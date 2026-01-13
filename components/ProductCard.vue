@@ -45,12 +45,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Autoplay } from 'swiper/modules';
 
 // Define props
-defineProps({
+const props = defineProps({
   product: {
     type: Object,
     required: true
@@ -58,11 +58,13 @@ defineProps({
 });
 
 const swiperInstance = ref(null);
-const isWishlist = ref(false);
+const { toggleWishlist: toggleGlobalWishlist, isInWishlist } = useWishlist();
 const isMounted = ref(false);
 
+const isWishlist = computed(() => isInWishlist(props.product.id));
+
 const toggleWishlist = () => {
-  isWishlist.value = !isWishlist.value;
+  toggleGlobalWishlist(props.product);
 };
 
 const onSwiper = (swiper) => {

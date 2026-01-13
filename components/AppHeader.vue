@@ -38,9 +38,10 @@
         <!-- header right -->
         <div class="d-flex align-items-center gap-4">
           <div class="d-none d-md-flex align-items-center gap-5 header-right">
-            <nuxt-link to="#">
+            <nuxt-link to="/wishlist" class="position-relative">
               <i class="fa-solid fa-heart"></i>
               <span>Wishlist</span>
+              <span v-if="wishlist.length > 0" class="badge-count">{{ wishlist.length > 9 ? '9+' : wishlist.length }}</span>
             </nuxt-link>
             <nuxt-link to="#">
               <i class="fa-solid fa-cart-plus"></i>
@@ -115,8 +116,32 @@
   </header>
 </template>
 
+<style scoped>
+.badge-count {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: var(--yellow) !important;
+  color: var(--black) !important;
+  font-size: 10px;
+  font-weight: 800;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 2px solid var(--brand);
+  line-height: 1;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+</style>
+
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, computed } from 'vue';
+
+const { wishlist } = useWishlist();
 
 const headerSearch = ref(null);
 const selectRef = ref(null);

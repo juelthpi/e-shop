@@ -74,12 +74,13 @@
     </NuxtLink>
 
     <NuxtLink
-      
-      class="mobile-menu-item d-flex align-items-center flex-column py-3"
+      to="/wishlist"
+      class="mobile-menu-item d-flex align-items-center flex-column py-3 position-relative"
       active-class="active"
     >
       <i class="fa-regular fa-heart"></i>
       <span>Wishlist</span>
+      <span v-if="wishlist.length > 0" class="badge-count-mobile">{{ wishlist.length > 9 ? '9+' : wishlist.length }}</span>
     </NuxtLink>
     <div
       class="mobile-menu-item d-flex align-items-center flex-column py-3 cursor-pointer"
@@ -126,7 +127,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
+
+const { wishlist } = useWishlist();
 
 const showSearch = ref(false);
 const searchPopup = ref(null);
@@ -164,6 +167,26 @@ onUnmounted(() => {
 
 .btn-brand {
   background-color: var(--brand);
+}
+
+.badge-count-mobile {
+  position: absolute;
+  top: 6px;
+  right: -10%;
+  background-color: var(--yellow);
+  color: var(--black);
+  font-size: 9px;
+  font-weight: 800;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1.5px solid #fff;
+  line-height: 1;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 /* Slide Up Transition */

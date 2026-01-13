@@ -6,7 +6,7 @@ export const useProducts = () => {
 
     const generateProducts = (count = 10) => {
         return Array.from({ length: count }, (_, i) => ({
-            id: i,
+            id: `prod-${i}`,
             name: ['Women Fashion', 'Trendy Shoes', 'Baby Accessories', 'Man Watch'][Math.floor(Math.random() * 4)],
             image: getRandomImage(),
             images: [getRandomImage(), getRandomImage(), getRandomImage()],
