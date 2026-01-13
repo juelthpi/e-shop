@@ -194,7 +194,7 @@ img {
 
 .banner-placeholder {
   background: #f0f0f0;
-  min-height: 200px;
+  /* min-height: 200px; */
   border-radius: 10px;
 }
 
@@ -815,11 +815,27 @@ img {
   }
 
   .search-box button {
-    display: none;
+
+
+    padding: 8px 8px;
+
+    font-size: 10px;
+
   }
 
   .header-search-wrapper {
-    max-width: 90%;
+    max-width: 98%;
+  }
+
+  .search-box select {
+
+    font-size: 14px;
+  }
+
+  .search-box {
+
+    border-radius: 30px;
+    padding: 6px 6px;
   }
 
   .search-box input {
