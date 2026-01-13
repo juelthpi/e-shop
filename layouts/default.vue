@@ -3,6 +3,7 @@
  
     <OffcanvasMenu />
     <AppHeader />
+    <CartDrawer />
     <slot />
     <AppFooter />
   </div>

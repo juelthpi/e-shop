@@ -27,7 +27,7 @@
           <i class="fa-regular fa-heart"></i>
         </div>
         <div class="slider-product-cart">
-          <button class="add-to-cart-btn">Add to cart</button>
+          <NuxtLink to="/product-details" class="add-to-cart-btn text-decoration-none d-flex align-items-center justify-content-center">Add to cart</NuxtLink>
         </div>
         <div class="p-3 rounded-2 bg-brand-2">
           <NuxtLink to="/product-details" class="text-decoration-none">

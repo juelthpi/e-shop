@@ -92,14 +92,14 @@
       <span>Search</span>
     </div>
 
-    <NuxtLink
-      
-      class="mobile-menu-item d-flex align-items-center flex-column py-3"
-      
+    <div
+      class="mobile-menu-item d-flex align-items-center flex-column py-3 position-relative cursor-pointer"
+      @click="toggleCartDrawer"
     >
-      <i class="fa-solid fa-cart-plus"></i>
+      <i class="fa-solid fa-cart-shopping"></i>
       <span>Cart</span>
-    </NuxtLink>
+      <span v-if="cartCount > 0" class="badge-count-mobile">{{ cartCount > 9 ? '9+' : cartCount }}</span>
+    </div>
 
     <NuxtLink
        
@@ -130,6 +130,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 
 const { wishlist } = useWishlist();
+const { cartCount, toggleCartDrawer } = useCart();
 
 const showSearch = ref(false);
 const searchPopup = ref(null);
@@ -171,12 +172,12 @@ onUnmounted(() => {
 
 .badge-count-mobile {
   position: absolute;
-  top: 6px;
-  right: -10%;
+  top: -2px;
+  right: -12%;
   background-color: var(--yellow);
   color: var(--black);
-  font-size: 9px;
-  font-weight: 800;
+  font-size:10px;
+  font-weight: 400;
   min-width: 16px;
   height: 16px;
   padding: 0 3px;

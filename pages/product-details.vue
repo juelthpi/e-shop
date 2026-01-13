@@ -46,8 +46,18 @@
               </div>
             </div>
             
-            <button class="btn-buy add-to-cart">Add to Cart</button>
+            <button class="btn-buy add-to-cart" @click="handleAddToCart">Add to Cart</button>
             <button class="btn-buy buy-now">Buy Now</button>
+
+            <!-- Success Animation Popup -->
+            <Transition name="pop">
+              <div v-if="showSuccessPopup" class="success-toast">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="fa-solid fa-circle-check text-success fa-lg"></i>
+                  <span>Successfully added to cart!</span>
+                </div>
+              </div>
+            </Transition>
 
             <!-- Seller Info Box -->
             <div class="seller-box mt-3">
@@ -98,7 +108,20 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 
+const { addToCart } = useCart();
+const showSuccessPopup = ref(false);
 const isMounted = ref(false);
+
+const handleAddToCart = () => {
+  const color = productData.colors.find(c => c.id === selectedColorId.value);
+  addToCart(productData, color, selectedSize.value, quantity.value);
+  
+  // Show success popup
+  showSuccessPopup.value = true;
+  setTimeout(() => {
+    showSuccessPopup.value = false;
+  }, 2000);
+};
 
 const breadcrumbItems = [
     { name: 'Home', link: '/' },
@@ -408,5 +431,30 @@ const similarProductConfig = {
 .btn-visit-store:hover {
   background: #f7f7f7;
   border-color: #999;
+}
+
+/* Success Toast Styles */
+.success-toast {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  background: white;
+  padding: 15px 25px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border-left: 5px solid #28a745;
+  z-index: 9999;
+}
+
+.pop-enter-active, .pop-leave-active {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.pop-enter-from {
+  transform: translateX(100px) scale(0.8);
+  opacity: 0;
+}
+.pop-leave-to {
+  transform: translateY(-20px) scale(0.9);
+  opacity: 0;
 }
 </style>
