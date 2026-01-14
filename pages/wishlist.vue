@@ -41,7 +41,7 @@
                 <i class="fa-regular fa-heart fa-4x text-muted mb-3"></i>
                 <h5>Your wishlist is empty</h5>
                 <p>Add some products to your wishlist to see them here.</p>
-                <NuxtLink to="/category" class="primary-btn w-auto px-4 mt-3 d-inline-block">Go Shopping</NuxtLink>
+                <NuxtLink to="/category" class="primary-btn justify-content-center w-auto px-4 mt-3 d-inline-block">Go Shopping</NuxtLink>
             </div>
         </div>
     </div>

@@ -97,9 +97,18 @@
 
           <!-- Shipping Form Card -->
           <div class="checkout-card mb-4 p-4 p-md-5">
-            <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
-              <i class="fa-solid fa-truck-fast text-brand"></i> Shipping Information
-            </h5>
+            <div class="d-flex align-items-center justify-content-between mb-4">
+              <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                <i class="fa-solid fa-truck-fast text-brand"></i> Shipping Information
+              </h5>
+              <button 
+                v-if="user" 
+                class="btn btn-brand-light btn-sm rounded-pill px-3 fw-bold"
+                @click="autoFillFromProfile"
+              >
+                <i class="fa-solid fa-address-book me-2"></i> Use Saved Info
+              </button>
+            </div>
             <div class="row gy-4">
               <!-- Left Column: Personal Info -->
               <div class="col-md-6">
@@ -269,7 +278,7 @@
               <div 
                 class="payment-method-item" 
                 :class="{ active: selectedPaymentMethod === 'online' }"
-                @click="selectedPaymentMethod = 'online'"
+                @click="selectedPaymentMethod = 'online'; if(!selectedOnlineProvider) selectedOnlineProvider = 'bkash'"
               >
                 <div class="method-icon">
                   <i class="fa-solid fa-globe"></i>
@@ -485,9 +494,9 @@
             <div class="validation-icon-wrapper mb-3">
               <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
-            <h5 class="fw-bold mb-2">Incomplete Information</h5>
-            <p class="text-muted mb-4">Please fill up all required shipping information to proceed with your order.</p>
-            <button class="primary-btn justify-content-center" @click="showValidationModal = false">Got it</button>
+            <h5 class="fw-bold mb-2">{{ validationModalTitle }}</h5>
+            <p class="text-muted mb-4">{{ validationModalMessage }}</p>
+            <button class="primary-btn justify-content-center" @click="handleModalClose">Got it</button>
           </div>
         </div>
       </Transition>
@@ -515,8 +524,8 @@
              </div>
 
              <div class="d-flex flex-column gap-3">
-                <NuxtLink to="/" class="primary-btn w-100 justify-content-center">Continue Shopping</NuxtLink>
-                <button class="btn btn-outline-dark rounded-pill py-3 fw-bold" @click="isOrderConfirmed = false">Back to Checkout</button>
+                <NuxtLink to="/user-dashboard" class="primary-btn w-100 justify-content-center">Go to Dashboard</NuxtLink>
+                <NuxtLink to="/" class="btn btn-outline-dark rounded-pill py-3 fw-bold text-decoration-none">Continue Shopping</NuxtLink>
              </div>
           </div>
         </div>
@@ -526,8 +535,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 const { cart, subtotal } = useCart()
+const { user, loginOrUpdateUser, addOrder } = useUser()
 
 const breadcrumbItems = [
   { name: 'Home', link: '/' },
@@ -541,10 +550,10 @@ const isMapModalOpen = ref(false)
 const tempLocation = ref(null)
 
 // Shipping Form Fields
-const fullName = ref('')
-const phoneNumber = ref('')
-const email = ref('')
-const detailedAddress = ref('')
+const fullName = ref(user.value?.name || '')
+const phoneNumber = ref(user.value?.phone || '')
+const email = ref(user.value?.email || '')
+const detailedAddress = ref(user.value?.address || '')
 const additionalInstructions = ref('')
 
 // Payment Selection
@@ -555,6 +564,8 @@ const orderId = ref(null)
 const copiedOrderId = ref(false)
 const isReviewing = ref(false)
 const showValidationModal = ref(false)
+const validationModalTitle = ref('Incomplete Information')
+const validationModalMessage = ref('Please fill up all required shipping information to proceed with your order.')
 
 const isFormValid = computed(() => {
   return fullName.value.trim() && 
@@ -567,14 +578,32 @@ const isFormValid = computed(() => {
 })
 
 const onlineProviders = [
-  { id: 'bkash', name: 'bKash', logo: 'https://logos-download.com/wp-content/uploads/2022/01/BKash_Logo-700x644.png' },
-  { id: 'nagad', name: 'Nagad', logo: 'https://logos-download.com/wp-content/uploads/2022/01/Nagad_Logo-700x247.png' },
-  { id: 'rocket', name: 'Rocket', logo: 'https://logos-download.com/wp-content/uploads/2022/01/Dutch_Bangla_Bank_Rocket_Logo-700x388.png' },
-  { id: 'card', name: 'Card', logo: 'https://logos-download.com/wp-content/uploads/2016/03/Mastercard_Logo_2016-700x429.png' }
+  { id: 'bkash', name: 'bKash', logo: '/assets/images/payments/bkash.png' },
+  { id: 'nagad', name: 'Nagad', logo: '/assets/images/payments/nagad.png' },
+  { id: 'rocket', name: 'Rocket', logo: '/assets/images/payments/rocket.png' },
+  { id: 'card', name: 'Card', logo: '/assets/images/payments/card.png' }
 ]
 
+const handleModalClose = () => {
+    if (cart.value.length === 0) {
+        showValidationModal.value = false
+        navigateTo('/')
+        return
+    }
+    showValidationModal.value = false
+}
+
 const handlePlaceOrder = () => {
+    if (cart.value.length === 0) {
+        validationModalTitle.value = 'Empty Cart'
+        validationModalMessage.value = 'Your cart is empty. Please add some products to checkout.'
+        showValidationModal.value = true
+        return
+    }
+
     if (!isFormValid.value) {
+        validationModalTitle.value = 'Incomplete Information'
+        validationModalMessage.value = 'Please fill up all required shipping information to proceed with your order.'
         showValidationModal.value = true
         return
     }
@@ -583,10 +612,61 @@ const handlePlaceOrder = () => {
 }
 
 const confirmFinalOrder = () => {
-    // Final Step: Generate ID and show success
-    orderId.value = 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase()
+    // 1. Generate Order ID
+    const newOrderId = 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase()
+    orderId.value = newOrderId
+
+    // 2. Only update session/profile if it's the first time or as requested
+    // If user exists, we don't overwrite their SAVED profile with this order's info
+    if (!user.value) {
+        loginOrUpdateUser({
+            name: fullName.value,
+            phone: phoneNumber.value,
+            email: email.value,
+            address: detailedAddress.value,
+            division: selectedDivision.value,
+            district: selectedDistrict.value,
+            upazila: selectedUpazila.value,
+            avatar: null
+        })
+    }
+
+    // 3. Add Order to History
+    addOrder({
+        id: newOrderId,
+        date: new Date().toISOString(),
+        items: [...cart.value],
+        total: subtotal.value,
+        status: 'Pending',
+        paymentMethod: selectedPaymentMethod.value,
+        shipping: {
+            name: fullName.value,
+            phone: phoneNumber.value,
+            email: email.value,
+            address: detailedAddress.value,
+            location: `${selectedUpazila.value}, ${selectedDistrict.value}`
+        }
+    })
+
+    // 4. Clear Cart
+    cart.value = []
+
+    // 5. Show Success Modal
     isOrderConfirmed.value = true
-    isReviewing.value = false // Close review view for the success modal
+    isReviewing.value = false 
+}
+
+const autoFillFromProfile = () => {
+    if (!user.value) return
+    
+    fullName.value = user.value.name || ''
+    phoneNumber.value = user.value.phone || ''
+    email.value = user.value.email || ''
+    detailedAddress.value = user.value.address || ''
+    selectedDivision.value = user.value.division || ''
+    selectedDistrict.value = user.value.district || ''
+    selectedUpazila.value = user.value.upazila || ''
+    locationSelected.value = !!user.value.address // assume if they have address, it's valid
 }
 
 const goBackToEdit = () => {
@@ -704,9 +784,9 @@ const districts = ['Dhaka', 'Narayanganj', 'Gazipur', 'Manikganj', 'Munshiganj',
 const upazilas = ['Savar', 'Dhamrai', 'Keraniganj', 'Nawabganj', 'Dohar']
 
 // Selection States
-const selectedDivision = ref('')
-const selectedDistrict = ref('')
-const selectedUpazila = ref('')
+const selectedDivision = ref(user.value?.division || '')
+const selectedDistrict = ref(user.value?.district || '')
+const selectedUpazila = ref(user.value?.upazila || '')
 
 // Search States
 const divisionSearch = ref('')
@@ -753,6 +833,11 @@ const closeAllSelects = (e) => {
 
 onMounted(() => {
    window.addEventListener('click', closeAllSelects)
+   
+   // Auto-set location selected if address exists
+   if (user.value?.address) {
+       locationSelected.value = true
+   }
 })
 
 onUnmounted(() => {

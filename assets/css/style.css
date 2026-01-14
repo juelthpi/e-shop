@@ -910,3 +910,198 @@ img {
     margin-top: -6px;
   }
 }
+
+/* Common Auth Styles */
+.auth-card {
+  max-width: 950px;
+  width: 100%;
+  min-height: 600px;
+}
+
+.auth-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.auth-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(69, 40, 41, 0.1), transparent);
+}
+
+.auth-title {
+  color: var(--brand);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.form-control-custom {
+  padding: 14px 20px;
+  font-size: 16px;
+  border: 1.5px solid #ececec;
+  border-radius: 12px;
+  background: #f9f9f9;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+.form-control-custom:focus {
+  background: #fff;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 4px rgba(69, 40, 41, 0.1);
+  outline: none;
+}
+
+/* Success Toast Styles */
+.success-toast {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  background: white;
+  padding: 16px 24px;
+  border-radius: 16px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  border-left: 6px solid #28a745;
+  z-index: 9999;
+  min-width: 320px;
+}
+
+.toast-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.bg-success-light {
+  background-color: #d4edda;
+}
+
+.error-toast {
+  border-left-color: #dc3545 !important;
+}
+
+.bg-danger-light {
+  background-color: #f8d7da;
+}
+
+/* Toast Animation */
+.toast-pop-enter-active {
+  animation: toast-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.toast-pop-leave-active {
+  animation: toast-in 0.4s reverse ease-in-out;
+}
+
+@keyframes toast-in {
+  0% {
+    transform: translateX(100%) scale(0.7);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Country Selector & Phone Input Styles */
+.phone-input-group {
+  background: #f9f9f9;
+  border: 1.5px solid #ececec;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  overflow: visible;
+}
+
+.phone-input-group:focus-within {
+  border-color: var(--brand);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(69, 40, 41, 0.1);
+}
+
+.phone-country-trigger {
+  cursor: pointer;
+  background: transparent;
+  transition: background 0.2s;
+  border-right: 1px solid #eee;
+  height: 100%;
+}
+
+.phone-country-trigger:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.phone-flag-img {
+  width: 24px;
+  height: 16px;
+  object-fit: cover;
+  border-radius: 2px;
+}
+
+.form-control-minimal {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 16px;
+}
+
+.phone-country-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 280px;
+  background: white;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  z-index: 1050;
+  margin-top: 8px;
+  overflow: hidden;
+  border: 1px solid #eee;
+}
+
+.phone-country-list-scroll {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.phone-country-option {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.phone-country-option:hover {
+  background: #f8f9fa;
+}
+
+.phone-country-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.phone-country-code {
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.fade-down-enter-active,
+.fade-down-leave-active {
+  transition: all 0.2s ease;
+}
+
+.fade-down-enter-from,
+.fade-down-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}

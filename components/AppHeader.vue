@@ -56,23 +56,44 @@
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                <i class="fa-regular fa-user mb-1"></i>
-                <span>Profile</span>
+                <div v-if="user" class="header-avatar-circle">
+                   <img :src="user.avatar" alt="UB" class="w-100 h-100 rounded-circle object-fit-cover">
+                </div>
+                <template v-else>
+                   <i class="fa-regular fa-user mb-1"></i>
+                   <span>Profile</span>
+                </template>
               </button>
 
-              <ul class="dropdown-menu dropdown-menu-end profile-menu" aria-labelledby="profileDropdown">
-                <li>
-                  <nuxt-link class="dropdown-item" to="#">
-                    <i class="fa-solid fa-right-to-bracket"></i>
-                    Login
-                  </nuxt-link>
-                </li>
-                <li>
-                  <nuxt-link class="dropdown-item" to="#">
-                    <i class="fa-solid fa-user-plus"></i>
-                    Sign Up
-                  </nuxt-link>
-                </li>
+              <ul class="dropdown-menu dropdown-menu-end profile-menu shadow-lg border-0 rounded-4 mt-2 p-2" aria-labelledby="profileDropdown">
+                <template v-if="!user">
+                    <li>
+                      <nuxt-link class="dropdown-item rounded-3 mb-1" to="/login">
+                        <i class="fa-solid fa-right-to-bracket me-2 text-muted"></i>
+                        Login
+                      </nuxt-link>
+                    </li>
+                    <li>
+                      <nuxt-link class="dropdown-item rounded-3" to="/signup">
+                        <i class="fa-solid fa-user-plus me-2 text-muted"></i>
+                        Sign Up
+                      </nuxt-link>
+                    </li>
+                </template>
+                <template v-else>
+                     <li>
+                      <nuxt-link class="dropdown-item rounded-3 mb-1" to="/user-dashboard">
+                        <i class="fa-solid fa-gauge-high me-2 text-muted"></i>
+                        Dashboard
+                      </nuxt-link>
+                    </li>
+                    <li>
+                      <button class="dropdown-item rounded-3 text-danger" @click="handleLogout">
+                        <i class="fa-solid fa-right-from-bracket me-2"></i>
+                        Logout
+                      </button>
+                    </li>
+                </template>
               </ul>
             </div>
           </div>
@@ -121,6 +142,7 @@ import { onMounted, onUnmounted, ref, computed } from 'vue';
 
 const { wishlist } = useWishlist();
 const { cartCount, toggleCartDrawer } = useCart();
+const { user, logout } = useUser();
 
 const headerSearch = ref(null);
 const selectRef = ref(null);
@@ -156,6 +178,10 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
 });
+const handleLogout = () => {
+  logout();
+  navigateTo('/');
+};
 </script>
 
 <style scoped>
@@ -195,5 +221,13 @@ onUnmounted(() => {
 .profile-btn:focus, .profile-btn:active {
     box-shadow: none !important;
     outline: none !important;
+}
+
+.header-avatar-circle {
+    width: 35px;
+    height: 35px;
+    border: 2px solid rgba(255,255,255,0.8);
+    border-radius: 50%;
+    overflow: hidden;
 }
 </style>

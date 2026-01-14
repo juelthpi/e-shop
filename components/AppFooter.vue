@@ -65,7 +65,7 @@
   <div class="d-flex align-items-center justify-content-between gap-2 px-2">
 
     <NuxtLink
-      
+      to="/"
       class="mobile-menu-item d-flex flex-column align-items-center py-3"
       active-class="active"
     >
@@ -102,9 +102,9 @@
     </div>
 
     <NuxtLink
-       
+      :to="user ? '/user-dashboard' : '/login'"
       class="mobile-menu-item d-flex align-items-center flex-column py-3"
-       
+      active-class="active"
     >
       <i class="fa-regular fa-user"></i>
       <span>Profile</span>
@@ -131,6 +131,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 
 const { wishlist } = useWishlist();
 const { cartCount, toggleCartDrawer } = useCart();
+const { user } = useUser();
 
 const showSearch = ref(false);
 const searchPopup = ref(null);
