@@ -85,11 +85,10 @@ const handleAddToCart = () => {
   // Show success popup
   showSuccessPopup.value = true;
   
-  // Small delay to show message before navigating
+  // Hide popup after a while, NO navigation
   setTimeout(() => {
     showSuccessPopup.value = false;
-    navigateTo('/checkout');
-  }, 800);
+  }, 2000);
 };
 
 const onSwiper = (swiper) => {

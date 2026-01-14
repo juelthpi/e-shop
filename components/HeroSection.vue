@@ -6,7 +6,7 @@
       </div>
       <Swiper
         v-else
-        :modules="[Autoplay, EffectFade]"
+        :modules="[Autoplay, EffectFade, Navigation]"
         :loop="true"
         :slides-per-view="1"
         :speed="1000"
@@ -17,11 +17,25 @@
           disableOnInteraction: false,
           pauseOnMouseEnter: true
         }"
+        :navigation="{
+          prevEl: '.hero-prev',
+          nextEl: '.hero-next',
+        }"
         class="hero-banner-slider"
       >
         <SwiperSlide v-for="n in 3" :key="n">
-          <img :src="`/assets/images/banners/hero-banner-${n}.jpg`" alt="img" class="w-100">
+          <nuxt-link to="/category" class="d-block">
+            <img :src="`/assets/images/banners/hero-banner-${n}.jpg`" alt="img" class="w-100">
+          </nuxt-link>
         </SwiperSlide>
+
+        <!-- Navigation Arrows -->
+        <button class="hero-nav-btn hero-prev">
+          <i class="fa-solid fa-angle-left"></i>
+        </button>
+        <button class="hero-nav-btn hero-next">
+          <i class="fa-solid fa-angle-right"></i>
+        </button>
       </Swiper>
     </div>
 
@@ -48,7 +62,7 @@
 </template>
 
 <script setup>
-import { Autoplay, EffectFade } from 'swiper/modules';
+import { Autoplay, EffectFade, Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { onMounted, ref } from 'vue';
 
@@ -76,11 +90,56 @@ onMounted(() => {
 });
 </script>
 
+
 <style scoped>
 .skeleton-container {
   width: 100%;
   height: 500px;
   overflow: hidden;
+}
+
+.hero-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 45px;
+  height: 45px;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(5px);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.hero-nav-btn:hover {
+  background: var(--brand);
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.hero-prev {
+  left:5%;
+}
+
+.hero-next {
+  right: 5%;
+}
+
+/* Hide navigation on smaller screens if desired, or adjust size */
+@media (max-width: 767px) {
+  .hero-nav-btn {
+    width: 35px;
+    height: 35px;
+    font-size: 14px;
+  }
+  .hero-prev { display: none; }
+  .hero-next { display: none; }
 }
 
 @media all and (max-width: 1199px) {

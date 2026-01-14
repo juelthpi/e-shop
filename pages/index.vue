@@ -7,10 +7,12 @@
       <div class="container">
         <div class="row">
           <div class="col-md-12">
+            
             <SimpleProductSlider 
               :items="newProducts" 
               :config="newProductConfig" 
               custom-class="new-product-list-slider"
+              :show-wishlist="false"
             />
           </div>
         </div>
@@ -22,10 +24,12 @@
       <div class="container">
         <div class="row">
           <div class="col-md-12">
+            
             <SimpleProductSlider 
               :items="hotProducts" 
               :config="hotProductConfig" 
               custom-class="hot-product-list-slider"
+              :show-wishlist="false"
             />
           </div>
         </div>

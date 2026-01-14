@@ -9,7 +9,7 @@
           </div>
         </NuxtLink>
         <!-- Wishlist Icon -->
-        <div class="heart-box position-absolute top-0 end-0 m-2" :class="{ active: isInWishlist(item.id) }" @click.stop="toggleWishlist(item)">
+        <div v-if="showWishlist" class="heart-box position-absolute top-0 end-0 m-2" :class="{ active: isInWishlist(item.id) }" @click.stop="toggleWishlist(item)">
           <i class="fa-regular fa-heart"></i>
         </div>
       </div>
@@ -35,6 +35,10 @@ defineProps({
   customClass: {
     type: String,
     default: ''
+  },
+  showWishlist: {
+    type: Boolean,
+    default: true
   }
 });
 </script>
