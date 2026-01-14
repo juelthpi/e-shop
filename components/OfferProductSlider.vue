@@ -1,8 +1,8 @@
 <template>
   <BaseSlider :config="config" :custom-class="customClass">
     <SwiperSlide v-for="item in items" :key="item.id" class="h-auto">
-      <nuxt-link to="/product-details" class="h-100 d-block text-decoration-none">
-        <div class="position-relative bg-white rounded-3 zoom shadow-1 h-100 d-flex flex-column">
+      <div class="position-relative bg-white rounded-3 zoom shadow-1 h-100 d-flex flex-column">
+        <nuxt-link to="/product-details" class="h-100 d-block text-decoration-none">
           <div class="overflow-hidden">
             <img :src="item.image" alt="img" class="w-100 rounded-2">
           </div>
@@ -14,8 +14,13 @@
           <div class="bg-white position-absolute top-0 text-uppercase start-0 border-1 py-1 px-2 rounded-2">
             <span class="text-brand discount-text fw-bold">{{ item.discount }}</span>
           </div>
+        </nuxt-link>
+        
+        <!-- Wishlist Icon -->
+        <div class="heart-box position-absolute top-0 end-0 m-2" :class="{ active: isInWishlist(item.id) }" @click.stop="toggleWishlist(item)">
+          <i class="fa-regular fa-heart"></i>
         </div>
-      </nuxt-link>
+      </div>
     </SwiperSlide>
 
   </BaseSlider>
@@ -23,6 +28,8 @@
 
 <script setup>
 import { SwiperSlide } from 'swiper/vue';
+
+const { toggleWishlist, isInWishlist } = useWishlist();
 
 defineProps({
   items: {
@@ -39,3 +46,7 @@ defineProps({
   }
 });
 </script>
+
+<style scoped>
+/* No extra styles needed as we use global heart-box styles */
+</style>

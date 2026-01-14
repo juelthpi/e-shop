@@ -93,7 +93,7 @@
       <div class="mt-5 container">
         <div class="section-title mb-4 d-flex align-items-center justify-content-between">
           <h4 class="m-0 fw-bold">Similar Products</h4>
-          <NuxtLink to="/" class="text-decoration-none text-brand fw-bold">See All</NuxtLink>
+          
         </div>
         <SimpleProductSlider 
           :items="similarProducts" 

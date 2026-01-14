@@ -118,9 +118,11 @@ const handleMouseMove = (event) => {
 
   const rect = mainImageRef.value.getBoundingClientRect();
   
+  // Calculate lens position relative to container
   let x = event.clientX - rect.left - lensSize / 2;
   let y = event.clientY - rect.top - lensSize / 2;
 
+  // Constrain lens to container bounds
   if (x < 0) x = 0;
   if (y < 0) y = 0;
   if (x > rect.width - lensSize) x = rect.width - lensSize;
@@ -144,15 +146,26 @@ const lensStyle = computed(() => ({
 const zoomImageStyle = computed(() => {
   if (!mainImageRef.value) return {};
   const rect = mainImageRef.value.getBoundingClientRect();
-  const scale = zoomPanelSize / lensSize;
-  const posX = (lensState.left / rect.width) * 100;
-  const posY = (lensState.top / rect.height) * 100;
+  
+  // The zoom lens is lensSize x lensSize. 
+  // We want this area to fill the zoom panel (which is 100% x 100%).
+  // So the ratio is (container / lensSize).
+  const widthRatio = (rect.width / lensSize) * 100;
+  const heightRatio = (rect.height / lensSize) * 100;
+  
+  // The shift is (lensPosition / lensSize) * 100%
+  const moveX = (lensState.left / lensSize) * 100;
+  const moveY = (lensState.top / lensSize) * 100;
 
   return {
-    transform: `translate(-${posX}%, -${posY}%) scale(${scale})`,
-    transformOrigin: '0 0',
-    width: '100%',
-    height: '100%'
+    position: 'absolute',
+    width: `${widthRatio}%`,
+    height: `${heightRatio}%`,
+    left: `-${moveX}%`,
+    top: `-${moveY}%`,
+    maxWidth: 'none',
+    maxHeight: 'none',
+    objectFit: 'contain' // Matches the main image's contain behavior
   };
 });
 </script>

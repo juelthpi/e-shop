@@ -27,7 +27,7 @@
           <i class="fa-regular fa-heart"></i>
         </div>
         <div class="slider-product-cart">
-          <NuxtLink to="/product-details" class="add-to-cart-btn text-decoration-none d-flex align-items-center justify-content-center">Add to cart</NuxtLink>
+          <button @click="handleAddToCart" class="add-to-cart-btn border-0 w-100 text-decoration-none d-flex align-items-center justify-content-center">Add to cart</button>
         </div>
         <div class="p-3 rounded-2 bg-brand-2">
           <NuxtLink to="/product-details" class="text-decoration-none">
@@ -41,6 +41,16 @@
         </div>
       </div>
     </div>
+
+    <!-- Success Animation Popup -->
+    <Transition name="pop">
+      <div v-if="showSuccessPopup" class="success-toast">
+        <div class="d-flex align-items-center gap-2">
+          <i class="fa-solid fa-circle-check text-success fa-lg"></i>
+          <span>Successfully added to cart!</span>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -59,12 +69,27 @@ const props = defineProps({
 
 const swiperInstance = ref(null);
 const { toggleWishlist: toggleGlobalWishlist, isInWishlist } = useWishlist();
+const { addToCart } = useCart();
 const isMounted = ref(false);
+const showSuccessPopup = ref(false);
 
 const isWishlist = computed(() => isInWishlist(props.product.id));
 
 const toggleWishlist = () => {
   toggleGlobalWishlist(props.product);
+};
+
+const handleAddToCart = () => {
+  addToCart(props.product, null, null, 1);
+  
+  // Show success popup
+  showSuccessPopup.value = true;
+  
+  // Small delay to show message before navigating
+  setTimeout(() => {
+    showSuccessPopup.value = false;
+    navigateTo('/checkout');
+  }, 800);
 };
 
 const onSwiper = (swiper) => {
@@ -87,5 +112,28 @@ onMounted(() => {
 
 
 <style scoped>
-/* Scoped styles can be added here if needed */
+/* Success Toast Styles */
+.success-toast {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  background: white;
+  padding: 15px 25px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border-left: 5px solid #28a745;
+  z-index: 9999;
+}
+
+.pop-enter-active, .pop-leave-active {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.pop-enter-from {
+  transform: translateX(100px) scale(0.8);
+  opacity: 0;
+}
+.pop-leave-to {
+  transform: translateY(-20px) scale(0.9);
+  opacity: 0;
+}
 </style>

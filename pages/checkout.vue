@@ -31,6 +31,68 @@
       <div class="row gy-4">
         <!-- Left Column: Shipping & Products -->
         <div class="col-lg-8">
+          <!-- Product Table Card -->
+          <div class="checkout-card p-0 overflow-hidden mb-4">
+            <!-- Header -->
+            <div class="p-3 border-bottom d-flex align-items-center gap-3 bg-white">
+              <label class="checkbox-container-custom mb-0">
+                <input type="checkbox" checked disabled>
+                <span class="checkmark"></span>
+                <span class="label-text fw-medium">Select All</span>
+              </label>
+            </div>
+            
+            <div class="product-list-container">
+               <div v-if="cart.length > 0">
+                  <div class="vendor-header p-3 d-flex align-items-center gap-3">
+                      <label class="checkbox-container-custom mb-0">
+                        <input type="checkbox" checked disabled>
+                        <span class="checkmark"></span>
+                      </label>
+                      <i class="fa-solid fa-store text-brand"></i>
+                      <span class="fw-bold">Your Items</span>
+                  </div>
+
+                  <div class="checkout-product-table">
+                     <div class="table-head d-flex px-4 py-2 text-uppercase text-muted small fw-bold">
+                        <div style="flex: 2">Product</div>
+                        <div style="flex: 1" class="text-center">Price</div>
+                        <div style="flex: 1" class="text-end pe-4">Actions</div>
+                     </div>
+                     
+                     <div v-for="item in cart" :key="item.cartItemId" class="product-row d-flex align-items-center px-4 py-4 border-top">
+                        <div style="flex: 2" class="d-flex align-items-center gap-3">
+                           <label class="checkbox-container-custom mb-0">
+                              <input type="checkbox" checked disabled>
+                              <span class="checkmark"></span>
+                           </label>
+                           <div class="product-img-box rounded overflow-hidden">
+                              <img :src="item.image" :alt="item.name">
+                           </div>
+                           <div class="flex-grow-1">
+                              <p class="product-name-checkout mb-1 fw-medium">{{ item.name }}</p>
+                              <div class="product-meta-badge">Size: {{ item.size || 'Medium' }}</div>
+                           </div>
+                        </div>
+                        <div style="flex: 1" class="text-center fw-bold text-black fs-5">
+                           ৳{{ (parseFloat(item.price.toString().replace(/[^\d.]/g, '')) * item.quantity).toFixed(2) }}
+                        </div>
+                        <div style="flex: 1" class="text-end pe-4">
+                           <div class="qty-control-disabled d-inline-flex align-items-center gap-3 p-1 px-3 rounded-pill border bg-light opacity-75">
+                              <span class="qty-btn-disabled">-</span>
+                              <span class="qty-val fw-bold">{{ item.quantity }}</span>
+                              <span class="qty-btn-disabled">+</span>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <div v-else class="p-5 text-center bg-white">
+                 <p class="text-muted">Your cart is empty. <NuxtLink to="/category" class="text-brand">Go shopping</NuxtLink></p>
+               </div>
+            </div>
+          </div>
+
           <!-- Shipping Form Card -->
           <div class="checkout-card mb-4 p-4 p-md-5">
             <div class="row gy-4">
@@ -44,9 +106,66 @@
                   <input type="text" class="form-control-custom" placeholder="01706720499">
                 </div>
                 <div class="form-group mb-4">
+                  <label class="form-label fw-bold mb-2">Email Address <span class="text-muted fs-7">(Optional)</span></label>
+                  <input type="email" class="form-control-custom" placeholder="example@mail.com">
+                </div>
+                <div class="form-group mb-4">
                   <label class="form-label fw-bold mb-2">Address <span class="text-danger">*</span></label>
                   <input type="text" class="form-control-custom" placeholder="Building / House No / Floor / Street">
                 </div>
+                
+                <!-- Google Maps Picker -->
+                <div class="form-group mb-4">
+                   <label class="form-label fw-bold mb-2">Location on Map</label>
+                   <div class="map-picker-container rounded-3 overflow-hidden border" @click="openMapModal">
+                      <div class="map-placeholder position-relative cursor-pointer">
+                         <!-- Real Map Preview -->
+                         <div v-if="locationSelected" id="map-preview" class="h-100 w-100"></div>
+
+                         <!-- Initial State Placeholder -->
+                         <div v-else class="h-100 w-100 position-relative">
+                            <img src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=1000&auto=format&fit=crop" alt="Mock Map" class="w-100 h-100 object-fit-cover opacity-40">
+                            <div class="map-overlay d-flex flex-column align-items-center justify-content-center">
+                               <div class="pulse-circle mb-2">
+                                  <i class="fa-solid fa-location-dot text-brand fa-2x"></i>
+                               </div>
+                               <button class="btn btn-dark rounded-pill px-4 shadow-sm fw-bold">Pick from Map</button>
+                            </div>
+                         </div>
+                      </div>
+                      <div class="p-3 bg-white border-top d-flex align-items-center justify-content-between">
+                         <div class="d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-map-location-dot text-brand"></i>
+                            <span class="fs-8 fw-medium text-dark">{{ locationSelected ? 'Location Selected Successfully' : 'No location selected yet' }}</span>
+                         </div>
+                         <button v-if="locationSelected" class="text-brand border-0 bg-transparent fw-bold fs-8" @click.stop="openMapModal">Change</button>
+                      </div>
+                   </div>
+                </div>
+
+                <!-- Map Selection Modal -->
+                <Transition name="fade">
+                  <div v-if="isMapModalOpen" class="map-modal-overlay" @click.self="closeMapModal">
+                    <div class="map-modal-content">
+                      <div class="modal-header-custom">
+                        <h6 class="mb-0">Select Delivery Location</h6>
+                        <button class="close-btn" @click="closeMapModal"><i class="fa-solid fa-xmark"></i></button>
+                      </div>
+                      <div class="modal-body-custom position-relative">
+                         <div id="map" class="h-100 w-100"></div>
+                         <div class="map-instruction">Click on your delivery location</div>
+                      </div>
+                      <div class="modal-footer-custom">
+                        <div class="location-status text-muted small">
+                           <i class="fa-solid fa-circle-check text-success me-1" v-if="tempLocation"></i>
+                           {{ tempLocation ? 'Location pinned!' : 'Please click on the map' }}
+                        </div>
+                        <button class="primary-btn w-auto px-5" :disabled="!tempLocation" @click="confirmLocation">Confirm Location</button>
+                      </div>
+                    </div>
+                  </div>
+                </Transition>
+
                 <div class="form-group mb-0">
                   <label class="form-label fw-bold mb-2">Additional Instruction</label>
                   <textarea class="form-control-custom py-3" placeholder="Enter additional instruction for the address (optional)" rows="3"></textarea>
@@ -111,73 +230,11 @@
               </div>
             </div>
           </div>
-
-          <!-- Product Table Card -->
-          <div class="checkout-card p-0 overflow-hidden">
-            <!-- Header -->
-            <div class="p-3 border-bottom d-flex align-items-center gap-3 bg-white">
-              <label class="checkbox-container-custom mb-0">
-                <input type="checkbox" checked disabled>
-                <span class="checkmark"></span>
-                <span class="label-text fw-medium">Select All</span>
-              </label>
-            </div>
-            
-            <div class="product-list-container">
-               <div v-if="cart.length > 0">
-                  <div class="vendor-header p-3 d-flex align-items-center gap-3">
-                      <label class="checkbox-container-custom mb-0">
-                        <input type="checkbox" checked disabled>
-                        <span class="checkmark"></span>
-                      </label>
-                      <i class="fa-solid fa-store text-brand"></i>
-                      <span class="fw-bold">Your Items</span>
-                  </div>
-
-                  <div class="checkout-product-table">
-                     <div class="table-head d-flex px-4 py-2 text-uppercase text-muted small fw-bold">
-                        <div style="flex: 2">Product</div>
-                        <div style="flex: 1" class="text-center">Price</div>
-                        <div style="flex: 1" class="text-end pe-4">Actions</div>
-                     </div>
-                     
-                     <div v-for="item in cart" :key="item.cartItemId" class="product-row d-flex align-items-center px-4 py-4 border-top">
-                        <div style="flex: 2" class="d-flex align-items-center gap-3">
-                           <label class="checkbox-container-custom mb-0">
-                              <input type="checkbox" checked disabled>
-                              <span class="checkmark"></span>
-                           </label>
-                           <div class="product-img-box rounded overflow-hidden">
-                              <img :src="item.image" :alt="item.name">
-                           </div>
-                           <div class="flex-grow-1">
-                              <p class="product-name-checkout mb-1 fw-medium">{{ item.name }}</p>
-                              <div class="product-meta-badge">Size: {{ item.size || 'Medium' }}</div>
-                           </div>
-                        </div>
-                        <div style="flex: 1" class="text-center fw-bold text-black fs-5">
-                           ৳{{ (parseFloat(item.price.toString().replace(/[^\d.]/g, '')) * item.quantity).toFixed(2) }}
-                        </div>
-                        <div style="flex: 1" class="text-end pe-4">
-                           <div class="qty-control-disabled d-inline-flex align-items-center gap-3 p-1 px-3 rounded-pill border bg-light opacity-75">
-                              <span class="qty-btn-disabled">-</span>
-                              <span class="qty-val fw-bold">{{ item.quantity }}</span>
-                              <span class="qty-btn-disabled">+</span>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-               <div v-else class="p-5 text-center bg-white">
-                 <p class="text-muted">Your cart is empty. <NuxtLink to="/category" class="text-brand">Go shopping</NuxtLink></p>
-               </div>
-            </div>
-          </div>
         </div>
 
         <!-- Right Column: Summary -->
         <div class="col-lg-4">
-          <div class="checkout-card p-4">
+          <div class="checkout-card p-4 sticky-side-card">
             <label class="form-label fw-bold mb-3">Coupon:</label>
             <div class="coupon-box mb-4">
               <input type="text" placeholder="Enter coupon code" class="coupon-input-field">
@@ -229,8 +286,106 @@ const breadcrumbItems = [
 
 const deliveryLabel = ref('home')
 const activeSelect = ref(null)
+const locationSelected = ref(false)
+const isMapModalOpen = ref(false)
+const tempLocation = ref(null)
+let map = null
+let marker = null
+
+let previewMap = null
+
+const openMapModal = () => {
+    isMapModalOpen.value = true
+    document.body.style.overflow = 'hidden'
+    
+    // Give time for modal animation then init map
+    setTimeout(() => {
+        initMap()
+    }, 400)
+}
+
+const closeMapModal = () => {
+    isMapModalOpen.value = false
+    document.body.style.overflow = ''
+    if (map) {
+        map.remove()
+        map = null
+        marker = null
+    }
+}
+
+const initMap = () => {
+    if (typeof L === 'undefined') return
+
+    // Initialize map centered on Bangladesh/Dhaka or previously selected location
+    const center = tempLocation.value ? [tempLocation.value.lat, tempLocation.value.lng] : [23.8103, 90.4125]
+    map = L.map('map').setView(center, tempLocation.value ? 16 : 13)
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map)
+
+    if (tempLocation.value) {
+        marker = L.marker([tempLocation.value.lat, tempLocation.value.lng]).addTo(map)
+    }
+
+    // Handle click to place marker
+    map.on('click', (e) => {
+        const { lat, lng } = e.latlng
+        tempLocation.value = { lat, lng }
+        
+        if (marker) {
+            marker.setLatLng([lat, lng])
+        } else {
+            marker = L.marker([lat, lng]).addTo(map)
+        }
+    })
+}
+
+const initPreviewMap = () => {
+    if (typeof L === 'undefined' || !tempLocation.value) return
+    
+    // Smoothly wait for DOM update
+    nextTick(() => {
+        if (previewMap) {
+            previewMap.remove()
+            previewMap = null
+        }
+
+        const { lat, lng } = tempLocation.value
+        previewMap = L.map('map-preview', {
+            zoomControl: false,
+            dragging: false,
+            scrollWheelZoom: false,
+            doubleClickZoom: false,
+            touchZoom: false
+        }).setView([lat, lng], 16)
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(previewMap)
+        L.marker([lat, lng]).addTo(previewMap)
+        
+        // Ensure tiles are correctly rendered
+        setTimeout(() => previewMap.invalidateSize(), 200)
+    })
+}
+
+const confirmLocation = () => {
+    locationSelected.value = true
+    closeMapModal()
+    initPreviewMap()
+}
+
+// modalPinStyle is no longer needed for Leaflet as it manages markers itself
 
 // Locations Data
+useHead({
+  link: [
+    { rel: 'stylesheet', href: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css' }
+  ],
+  script: [
+    { src: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js' }
+  ]
+})
 const divisions = ['Dhaka', 'Chittagong', 'Rajshahi', 'Khulna', 'Barisal', 'Sylhet', 'Rangpur', 'Mymensingh']
 const districts = ['Dhaka', 'Narayanganj', 'Gazipur', 'Manikganj', 'Munshiganj', 'Narsingdi']
 const upazilas = ['Savar', 'Dhamrai', 'Keraniganj', 'Nawabganj', 'Dohar']
@@ -594,9 +749,34 @@ onUnmounted(() => {
    font-size: 18px;
 }
 
+
+
+ 
+ 
+.divider {
+   height: 1px;
+   background: #eee;
+}
+
+.text-black { color: #000 !important; }
+
+.sticky-side-card {
+  position: sticky;
+  top: 120px; /* Offset for header/padding */
+  z-index: 10;
+  align-self: flex-start; /* Crucial: prevents card from stretching to parent height */
+}
+
+@media (max-width: 991px) {
+  .sticky-side-card {
+    position: static;
+  }
+}
+
 /* Summary Right Column */
 .coupon-box {
   display: flex;
+  align-items: center; /* Center input and button vertically */
   background: white;
   border: 1.5px solid #eee;
   border-radius: 30px;
@@ -613,21 +793,188 @@ onUnmounted(() => {
 .apply-coupon-btn {
   background: var(--brand);
   color: white;
-  padding: 8px 25px;
+  padding: 8px 15px;
   border-radius: 30px;
   font-weight: 600;
   font-size: 14px;
+  white-space: nowrap;
 }
 
- 
- 
-.divider {
-   height: 1px;
-   background: #eee;
+/* Map Picker Styles */
+.map-picker-container {
+  background: #fff;
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
-.text-black { color: #000 !important; }
+.map-picker-container:hover {
+    border-color: var(--brand) !important;
+}
 
+.map-placeholder {
+  height: 200px;
+  background: #eee;
+}
+
+.map-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 2;
+}
+
+.pulse-circle {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 0 rgba(111, 44, 45, 0.4);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(111, 44, 45, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(111, 44, 45, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(111, 44, 45, 0); }
+}
+
+.user-marker-fixed {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+}
+
+.pin-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pin-wrapper i {
+    font-size: 40px;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.pin-shadow {
+    width: 20px;
+    height: 10px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 50%;
+    filter: blur(2px);
+    margin-top: -5px;
+}
+
+/* Modal Styles */
+.map-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.map-modal-content {
+    background: white;
+    width: 100%;
+    max-width: 900px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+}
+
+.modal-header-custom {
+    padding: 20px 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header-custom h6 { font-size: 18px; color: #1a1a1a; font-weight: 700; }
+
+.close-btn {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+    color: #666;
+    transition: all 0.2s;
+}
+
+.close-btn:hover { background: #eee; color: #000; transform: rotate(90deg); }
+
+.modal-body-custom {
+    height: 500px;
+    background: #f8f9fa;
+    overflow: hidden;
+    cursor: crosshair;
+}
+
+.clickable-map { transition: transform 0.3s ease; }
+.clickable-map:active { transform: scale(1.02); }
+
+.map-instruction {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 13px;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.modal-pin {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    pointer-events: none;
+    z-index: 10;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-footer-custom {
+    padding: 20px 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fafafa;
+    border-top: 1px solid #eee;
+}
+
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+.fs-7 { font-size: 0.85rem; }
+.fs-8 { font-size: 0.75rem; }
 @media (max-width: 991px) {
    .product-row {
       flex-direction: column;
