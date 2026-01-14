@@ -28,11 +28,13 @@
         </div>
       </div>
 
-      <div class="row gy-4">
-        <!-- Left Column: Shipping & Products -->
-        <div class="col-lg-8">
-          <!-- Product Table Card -->
-          <div class="checkout-card p-0 overflow-hidden mb-4">
+      <Transition name="fade-slide" mode="out-in">
+        <div v-if="!isReviewing" key="checkout-form">
+          <div class="row gy-4">
+            <!-- Left Column: Shipping & Products -->
+            <div class="col-lg-8">
+              <!-- Product Table Card -->
+              <div class="checkout-card p-0 overflow-hidden mb-4">
             <!-- Header -->
             <div class="p-3 border-bottom d-flex align-items-center gap-3 bg-white">
               <label class="checkbox-container-custom mb-0">
@@ -95,140 +97,216 @@
 
           <!-- Shipping Form Card -->
           <div class="checkout-card mb-4 p-4 p-md-5">
+            <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+              <i class="fa-solid fa-truck-fast text-brand"></i> Shipping Information
+            </h5>
             <div class="row gy-4">
+              <!-- Left Column: Personal Info -->
               <div class="col-md-6">
                 <div class="form-group mb-4">
                   <label class="form-label fw-bold mb-2">Full Name <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control-custom" placeholder="Enter your full name">
+                  <input type="text" v-model="fullName" class="form-control-custom" placeholder="Enter your full name">
                 </div>
                 <div class="form-group mb-4">
                   <label class="form-label fw-bold mb-2">Phone Number <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control-custom" placeholder="01706720499">
+                  <input type="text" v-model="phoneNumber" class="form-control-custom" placeholder="01706720499">
                 </div>
                 <div class="form-group mb-4">
                   <label class="form-label fw-bold mb-2">Email Address <span class="text-muted fs-7">(Optional)</span></label>
-                  <input type="email" class="form-control-custom" placeholder="example@mail.com">
+                  <input type="email" v-model="email" class="form-control-custom" placeholder="example@mail.com">
                 </div>
                 <div class="form-group mb-4">
-                  <label class="form-label fw-bold mb-2">Address <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control-custom" placeholder="Building / House No / Floor / Street">
+                  <label class="form-label fw-bold mb-2">Detailed Address <span class="text-danger">*</span></label>
+                  <input type="text" v-model="detailedAddress" class="form-control-custom mb-3" placeholder="Building / House No / Floor / Street">
+                  <textarea class="form-control-custom py-3" v-model="additionalInstructions" placeholder="Additional instructions (e.g. Landmark, Near Mosque)" rows="2"></textarea>
                 </div>
-                
+              </div>
+
+              <!-- Right Column: Location & Map -->
+              <div class="col-md-6">
+                <div class="mb-4">
+                    <label class="form-label fw-bold mb-2">Location Selection</label>
+                    <div class="row g-2">
+                      <div class="col-6 position-relative">
+                        <div class="searchable-select-wrapper" @click="toggleSelect('division')">
+                          <div class="selected-val text-truncate small">{{ selectedDivision || 'Division' }}</div>
+                          <i class="fa-solid fa-angle-down small"></i>
+                          <div v-if="activeSelect === 'division'" class="search-dropdown shadow-lg p-2" @click.stop>
+                            <input type="text" v-model="divisionSearch" placeholder="Search..." class="search-input mb-2">
+                            <ul class="options-list">
+                              <li v-for="d in filteredDivisions" :key="d" @click="selectOption('division', d)">{{ d }}</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-6 position-relative">
+                        <div class="searchable-select-wrapper" @click="toggleSelect('district')">
+                          <div class="selected-val text-truncate small">{{ selectedDistrict || 'District' }}</div>
+                          <i class="fa-solid fa-angle-down small"></i>
+                          <div v-if="activeSelect === 'district'" class="search-dropdown shadow-lg p-2" @click.stop>
+                            <input type="text" v-model="districtSearch" placeholder="Search..." class="search-input mb-2">
+                            <ul class="options-list">
+                              <li v-for="d in filteredDistricts" :key="d" @click="selectOption('district', d)">{{ d }}</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-12 position-relative">
+                        <div class="searchable-select-wrapper" @click="toggleSelect('upazila')">
+                          <div class="selected-val text-truncate small">{{ selectedUpazila || 'Police Station / Upazila' }}</div>
+                          <i class="fa-solid fa-angle-down small"></i>
+                          <div v-if="activeSelect === 'upazila'" class="search-dropdown shadow-lg p-2" @click.stop>
+                            <input type="text" v-model="upazilaSearch" placeholder="Search..." class="search-input mb-2">
+                            <ul class="options-list">
+                              <li v-for="u in filteredUpazilas" :key="u" @click="selectOption('upazila', u)">{{ u }}</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+
                 <!-- Google Maps Picker -->
                 <div class="form-group mb-4">
-                   <label class="form-label fw-bold mb-2">Location on Map</label>
                    <div class="map-picker-container rounded-3 overflow-hidden border" @click="openMapModal">
-                      <div class="map-placeholder position-relative cursor-pointer">
-                         <!-- Real Map Preview -->
+                      <div class="map-placeholder position-relative cursor-pointer" style="height: 140px;">
                          <div v-if="locationSelected" id="map-preview" class="h-100 w-100"></div>
-
-                         <!-- Initial State Placeholder -->
                          <div v-else class="h-100 w-100 position-relative">
                             <img src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=1000&auto=format&fit=crop" alt="Mock Map" class="w-100 h-100 object-fit-cover opacity-40">
                             <div class="map-overlay d-flex flex-column align-items-center justify-content-center">
-                               <div class="pulse-circle mb-2">
-                                  <i class="fa-solid fa-location-dot text-brand fa-2x"></i>
-                               </div>
-                               <button class="btn btn-dark rounded-pill px-4 shadow-sm fw-bold">Pick from Map</button>
+                               <button class="btn btn-dark rounded-pill px-3 shadow-sm fw-bold btn-sm">Pick from Map</button>
                             </div>
                          </div>
                       </div>
-                      <div class="p-3 bg-white border-top d-flex align-items-center justify-content-between">
-                         <div class="d-flex align-items-center gap-2">
-                            <i class="fa-solid fa-map-location-dot text-brand"></i>
-                            <span class="fs-8 fw-medium text-dark">{{ locationSelected ? 'Location Selected Successfully' : 'No location selected yet' }}</span>
-                         </div>
+                      <div class="p-2 bg-white border-top d-flex align-items-center justify-content-between">
+                         <span class="fs-8 fw-medium text-dark ms-2">{{ locationSelected ? 'Location Selected' : 'No location selected' }}</span>
                          <button v-if="locationSelected" class="text-brand border-0 bg-transparent fw-bold fs-8" @click.stop="openMapModal">Change</button>
                       </div>
                    </div>
                 </div>
 
-                <!-- Map Selection Modal -->
-                <Transition name="fade">
-                  <div v-if="isMapModalOpen" class="map-modal-overlay" @click.self="closeMapModal">
-                    <div class="map-modal-content">
-                      <div class="modal-header-custom">
-                        <h6 class="mb-0">Select Delivery Location</h6>
-                        <button class="close-btn" @click="closeMapModal"><i class="fa-solid fa-xmark"></i></button>
-                      </div>
-                      <div class="modal-body-custom position-relative">
-                         <div id="map" class="h-100 w-100"></div>
-                         <div class="map-instruction">Click on your delivery location</div>
-                      </div>
-                      <div class="modal-footer-custom">
-                        <div class="location-status text-muted small">
-                           <i class="fa-solid fa-circle-check text-success me-1" v-if="tempLocation"></i>
-                           {{ tempLocation ? 'Location pinned!' : 'Please click on the map' }}
-                        </div>
-                        <button class="primary-btn w-auto px-5" :disabled="!tempLocation" @click="confirmLocation">Confirm Location</button>
-                      </div>
-                    </div>
-                  </div>
-                </Transition>
-
                 <div class="form-group mb-0">
-                  <label class="form-label fw-bold mb-2">Additional Instruction</label>
-                  <textarea class="form-control-custom py-3" placeholder="Enter additional instruction for the address (optional)" rows="3"></textarea>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="form-group mb-4 position-relative">
-                  <label class="form-label fw-bold mb-2">Division</label>
-                  <div class="searchable-select-wrapper" @click="toggleSelect('division')">
-                     <div class="selected-val">{{ selectedDivision || '-- Please choose your division --' }}</div>
-                     <i class="fa-solid fa-angle-down"></i>
-                     <div v-if="activeSelect === 'division'" class="search-dropdown shadow-lg p-2" @click.stop>
-                        <input type="text" v-model="divisionSearch" placeholder="Search division..." class="search-input mb-2">
-                        <ul class="options-list">
-                           <li v-for="d in filteredDivisions" :key="d" @click="selectOption('division', d)">{{ d }}</li>
-                        </ul>
-                     </div>
-                  </div>
-                </div>
-                <div class="form-group mb-4 position-relative">
-                  <label class="form-label fw-bold mb-2">City / District <span class="text-danger">*</span></label>
-                  <div class="searchable-select-wrapper" @click="toggleSelect('district')">
-                     <div class="selected-val">{{ selectedDistrict || '-- Please choose your district --' }}</div>
-                     <i class="fa-solid fa-angle-down"></i>
-                     <div v-if="activeSelect === 'district'" class="search-dropdown shadow-lg p-2" @click.stop>
-                        <input type="text" v-model="districtSearch" placeholder="Search district..." class="search-input mb-2">
-                        <ul class="options-list">
-                           <li v-for="d in filteredDistricts" :key="d" @click="selectOption('district', d)">{{ d }}</li>
-                        </ul>
-                     </div>
-                  </div>
-                </div>
-                <div class="form-group mb-4 position-relative">
-                  <label class="form-label fw-bold mb-2">Police Station / Upazila</label>
-                   <div class="searchable-select-wrapper" @click="toggleSelect('upazila')">
-                     <div class="selected-val">{{ selectedUpazila || '-- Please choose your area --' }}</div>
-                     <i class="fa-solid fa-angle-down"></i>
-                     <div v-if="activeSelect === 'upazila'" class="search-dropdown shadow-lg p-2" @click.stop>
-                        <input type="text" v-model="upazilaSearch" placeholder="Search area..." class="search-input mb-2">
-                        <ul class="options-list">
-                           <li v-for="u in filteredUpazilas" :key="u" @click="selectOption('upazila', u)">{{ u }}</li>
-                        </ul>
-                     </div>
-                  </div>
-                </div>
-                <div class="form-group mb-4">
-                  <label class="form-label fw-bold mb-3">Select a label for effective delivery:</label>
-                  <div class="d-flex gap-3">
-                    <button class="label-btn" :class="{ active: deliveryLabel === 'home' }" @click="deliveryLabel = 'home'">
-                      <i class="fa-solid fa-house mb-0"></i> Home
+                  <label class="form-label fw-bold mb-2">Address Label</label>
+                  <div class="d-flex gap-2">
+                    <button class="label-btn py-2 flex-grow-1" :class="{ active: deliveryLabel === 'home' }" @click="deliveryLabel = 'home'">
+                      <i class="fa-solid fa-house"></i> Home
                     </button>
-                    <button class="label-btn" :class="{ active: deliveryLabel === 'office' }" @click="deliveryLabel = 'office'">
-                      <i class="fa-solid fa-building mb-0"></i> Office
+                    <button class="label-btn py-2 flex-grow-1" :class="{ active: deliveryLabel === 'office' }" @click="deliveryLabel = 'office'">
+                      <i class="fa-solid fa-building"></i> Office
                     </button>
                   </div>
                 </div>
+
                 <label class="checkbox-container-custom mt-3">
                   <input type="checkbox" checked>
                   <span class="checkmark"></span>
-                  <span class="label-text">Make it default address</span>
+                  <span class="label-text small">Make it default address</span>
                 </label>
               </div>
             </div>
+          </div>
+
+          <!-- Map Selection Modal -->
+          <Transition name="fade">
+            <div v-if="isMapModalOpen" class="map-modal-overlay" @click.self="closeMapModal">
+              <div class="map-modal-content">
+                <div class="modal-header-custom">
+                  <h6 class="mb-0">Select Delivery Location</h6>
+                  <button class="close-btn" @click="closeMapModal"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="modal-body-custom position-relative">
+                   <div id="map" class="h-100 w-100"></div>
+                   <div class="map-instruction">Click on your delivery location</div>
+                </div>
+                <div class="modal-footer-custom">
+                  <div class="location-status text-muted small">
+                     <i class="fa-solid fa-circle-check text-success me-1" v-if="tempLocation"></i>
+                     {{ tempLocation ? 'Location pinned!' : 'Please click on the map' }}
+                  </div>
+                  <button class="primary-btn w-auto px-5" :disabled="!tempLocation" @click="confirmLocation">Confirm Location</button>
+                </div>
+              </div>
+            </div>
+          </Transition>
+
+          <!-- Payment Method Card -->
+          <div class="checkout-card p-4 p-md-5 mb-4 position-relative">
+            <!-- Validation Overlay -->
+            <Transition name="fade">
+              <div v-if="!isFormValid" class="payment-lock-overlay d-flex flex-column align-items-center justify-content-center text-center p-4">
+                <div class="lock-icon mb-3">
+                  <i class="fa-solid fa-lock"></i>
+                </div>
+                <h6 class="fw-bold mb-2">Payment Section Locked</h6>
+                <p class="small text-muted mb-0">Please fill in your name, phone, address, and select a location on the map to unlock payment options.</p>
+              </div>
+            </Transition>
+
+            <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+              <i class="fa-solid fa-credit-card text-brand"></i> Payment Method
+            </h5>
+            
+            <div class="payment-options-grid mb-4">
+              <!-- COD Option -->
+              <div 
+                class="payment-method-item" 
+                :class="{ active: selectedPaymentMethod === 'cod' }"
+                @click="selectedPaymentMethod = 'cod'"
+              >
+                <div class="method-icon">
+                  <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+                <div class="method-info">
+                  <span class="fw-bold d-block">Cash on Delivery</span>
+                  <small class="text-muted">Pay when you receive</small>
+                </div>
+                <div class="method-check">
+                  <i class="fa-solid fa-circle-check"></i>
+                </div>
+              </div>
+
+              <!-- Online Payment Option -->
+              <div 
+                class="payment-method-item" 
+                :class="{ active: selectedPaymentMethod === 'online' }"
+                @click="selectedPaymentMethod = 'online'"
+              >
+                <div class="method-icon">
+                  <i class="fa-solid fa-globe"></i>
+                </div>
+                <div class="method-info">
+                  <span class="fw-bold d-block">Online Payment</span>
+                  <small class="text-muted">Pay securely online</small>
+                </div>
+                <div class="method-check">
+                  <i class="fa-solid fa-circle-check"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Online Payment Providers -->
+            <Transition name="fade-slide">
+              <div v-if="selectedPaymentMethod === 'online'" class="online-providers-selection">
+                <p class="fw-medium mb-3 small text-muted text-uppercase letter-spacing-1">Select Provider:</p>
+                <div class="providers-grid">
+                  <div 
+                    v-for="provider in onlineProviders" 
+                    :key="provider.id"
+                    class="provider-card"
+                    :class="{ active: selectedOnlineProvider === provider.id }"
+                    @click="selectedOnlineProvider = provider.id"
+                  >
+                    <div class="provider-logo">
+                      <img :src="provider.logo" :alt="provider.name">
+                    </div>
+                    <span>{{ provider.name }}</span>
+                    <div class="mini-check" v-if="selectedOnlineProvider === provider.id">
+                      <i class="fa-solid fa-check"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Transition>
           </div>
         </div>
 
@@ -265,18 +343,190 @@
               </div>
             </div>
 
-            <button class="primary-btn  justify-content-center">
+            <button class="primary-btn justify-content-center w-100" @click="handlePlaceOrder">
               Place Order
             </button>
           </div>
         </div>
       </div>
     </div>
+
+        <div v-else key="order-review">
+          <div class="review-view-container">
+            <div class="row gy-4">
+              <div class="col-lg-8">
+                <div class="checkout-card p-4 p-md-5 mb-4">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                  <h5 class="fw-bold m-0 d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-rectangle-list text-brand"></i> Review Your Order
+                  </h5>
+                  <button class="edit-review-btn" @click="goBackToEdit">
+                    <i class="fa-solid fa-pen-to-square"></i> Edit Info
+                  </button>
+                </div>
+
+                <div class="review-grid row gy-4">
+                  <!-- Info Block: Recipient -->
+                  <div class="col-md-6">
+                    <div class="review-block p-4 rounded-4 border">
+                      <h6 class="text-muted small text-uppercase fw-bold mb-3 letter-spacing-1">Recipient Details</h6>
+                      <div class="d-flex align-items-center gap-3 mb-2">
+                        <div class="info-avatar">{{ fullName.charAt(0) }}</div>
+                        <div>
+                          <span class="d-block fw-bold">{{ fullName }}</span>
+                          <small class="text-muted">{{ phoneNumber }}</small>
+                        </div>
+                      </div>
+                      <div v-if="email" class="d-flex align-items-center gap-2 text-muted small mt-2">
+                        <i class="fa-solid fa-envelope"></i> {{ email }}
+                      </div>
+                      <div class="mt-2">
+                         <span class="badge bg-light text-dark border px-3 py-2 rounded-pill small">
+                           <i class="fa-solid " :class="deliveryLabel === 'home' ? 'fa-house' : 'fa-building'"></i>
+                           {{ deliveryLabel.charAt(0).toUpperCase() + deliveryLabel.slice(1) }}
+                         </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Info Block: Delivery Address -->
+                  <div class="col-md-6">
+                    <div class="review-block p-4 rounded-4 border h-100">
+                      <h6 class="text-muted small text-uppercase fw-bold mb-3 letter-spacing-1">Delivery Address</h6>
+                      <p class="mb-1 fw-bold">{{ detailedAddress }}</p>
+                      <p class="text-muted small mb-0">{{ selectedUpazila }}, {{ selectedDistrict }}, {{ selectedDivision }}</p>
+                      <div v-if="additionalInstructions" class="mt-3 p-2 bg-light rounded small text-muted italic">
+                        "{{ additionalInstructions }}"
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Info Block: Payment Method -->
+                  <div class="col-md-12">
+                     <div class="review-block p-4 rounded-4 border bg-brand-light">
+                        <div class="d-flex align-items-center justify-content-between">
+                           <div>
+                              <h6 class="text-muted small text-uppercase fw-bold mb-2 letter-spacing-1">Payment Method</h6>
+                              <div class="d-flex align-items-center gap-3">
+                                 <i class="fa-solid fa-shield-halved text-brand"></i>
+                                 <span class="fw-bold">{{ selectedPaymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment (' + (onlineProviders.find(p => p.id === selectedOnlineProvider)?.name || 'Generic') + ')' }}</span>
+                              </div>
+                           </div>
+                           <div class="text-brand fs-4">
+                              <i class="fa-solid " :class="selectedPaymentMethod === 'cod' ? 'fa-hand-holding-dollar' : 'fa-credit-card'"></i>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                </div>
+
+                <!-- Product Preview Table -->
+                <div class="mt-5">
+                   <h6 class="text-muted small text-uppercase fw-bold mb-3 letter-spacing-1">Items in your order</h6>
+                   <div class="review-product-table border rounded-4 overflow-hidden">
+                      <div v-for="item in cart" :key="item.cartItemId" class="review-product-row p-3 d-flex align-items-center gap-3 border-bottom last-border-0">
+                         <img :src="item.image" class="review-item-img" alt="">
+                         <div class="flex-grow-1">
+                            <h6 class="mb-0 fw-bold small">{{ item.name }}</h6>
+                            <span class="text-muted fs-8">Qty: {{ item.quantity }} × ৳{{ parseFloat(item.price.replace(/[^\d.]/g, '')).toFixed(2) }}</span>
+                         </div>
+                         <div class="text-end fw-bold">
+                            ৳{{ (parseFloat(item.price.replace(/[^\d.]/g, '')) * item.quantity).toFixed(2) }}
+                         </div>
+                      </div>
+                   </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Review Summary Side -->
+            <div class="col-lg-4">
+              <div class="checkout-card p-4 sticky-side-card">
+                 <h5 class="fw-bold mb-4">Confirm Order</h5>
+                 <div class="summary-list mb-4">
+                    <div class="summary-item d-flex justify-content-between mb-2">
+                       <span class="text-muted">Subtotal</span>
+                       <span class="fw-bold">৳{{ subtotal.toFixed(2) }}</span>
+                    </div>
+                    <div class="summary-item d-flex justify-content-between mb-2">
+                       <span class="text-muted">Shipping</span>
+                       <span class="fw-bold text-success font-monospace">FREE</span>
+                    </div>
+                    <div class="divider my-3"></div>
+                    <div class="summary-item d-flex justify-content-between align-items-center">
+                       <span class="h6 fw-bold mb-0">Total Payable</span>
+                       <span class="h4 fw-bold text-brand mb-0">৳{{ subtotal.toFixed(2) }}</span>
+                    </div>
+                 </div>
+
+                 <p class="small text-muted mb-4 p-3 bg-light rounded-3">
+                    By clicking "Confirm Order", you agree to our Terms & Conditions and Privacy Policy.
+                 </p>
+
+                 <div class="d-flex flex-column gap-3">
+                    <button class="primary-btn justify-content-center py-4 fs-5" @click="confirmFinalOrder">
+                       <i class="fa-solid fa-paper-plane me-2"></i> Confirm Order
+                    </button>
+                    <button class="btn btn-link text-decoration-none text-muted small fw-bold" @click="goBackToEdit">
+                       Back to edit information
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Validation Error Modal -->
+      <Transition name="fade">
+        <div v-if="showValidationModal" class="validation-modal-overlay" @click="showValidationModal = false">
+          <div class="validation-modal-content" @click.stop>
+            <div class="validation-icon-wrapper mb-3">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h5 class="fw-bold mb-2">Incomplete Information</h5>
+            <p class="text-muted mb-4">Please fill up all required shipping information to proceed with your order.</p>
+            <button class="primary-btn justify-content-center" @click="showValidationModal = false">Got it</button>
+          </div>
+        </div>
+      </Transition>
+
+      <Transition name="fade">
+        <div v-if="isOrderConfirmed" class="success-modal-overlay">
+          <div class="success-modal-content text-center p-5">
+             <div class="success-icon-wrapper mb-4">
+                <i class="fa-solid fa-circle-check"></i>
+             </div>
+             <h2 class="fw-bold mb-2">Order Placed Successfully!</h2>
+             <p class="text-muted mb-4 px-md-5">Thank you for your purchase. We've received your order and the Order ID is generated for tracking.</p>
+             
+             <div class="order-id-badge p-4 rounded-4 mb-4 position-relative">
+                <span class="d-block text-muted small text-uppercase fw-bold mb-1">Your Order ID</span>
+                <div class="d-flex align-items-center justify-content-center gap-3">
+                  <span class="h3 fw-bold text-brand mb-0">{{ orderId }}</span>
+                  <button class="copy-id-btn" @click="copyOrderId" :class="{ copied: copiedOrderId }">
+                    <i class="fa-solid" :class="copiedOrderId ? 'fa-check' : 'fa-copy'"></i>
+                    <Transition name="scale">
+                      <span v-if="copiedOrderId" class="copy-status">Copied!</span>
+                    </Transition>
+                  </button>
+                </div>
+             </div>
+
+             <div class="d-flex flex-column gap-3">
+                <NuxtLink to="/" class="primary-btn w-100 justify-content-center">Continue Shopping</NuxtLink>
+                <button class="btn btn-outline-dark rounded-pill py-3 fw-bold" @click="isOrderConfirmed = false">Back to Checkout</button>
+             </div>
+          </div>
+        </div>
+      </Transition>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 const { cart, subtotal } = useCart()
 
 const breadcrumbItems = [
@@ -289,6 +539,69 @@ const activeSelect = ref(null)
 const locationSelected = ref(false)
 const isMapModalOpen = ref(false)
 const tempLocation = ref(null)
+
+// Shipping Form Fields
+const fullName = ref('')
+const phoneNumber = ref('')
+const email = ref('')
+const detailedAddress = ref('')
+const additionalInstructions = ref('')
+
+// Payment Selection
+const selectedPaymentMethod = ref('cod')
+const selectedOnlineProvider = ref(null)
+const isOrderConfirmed = ref(false)
+const orderId = ref(null)
+const copiedOrderId = ref(false)
+const isReviewing = ref(false)
+const showValidationModal = ref(false)
+
+const isFormValid = computed(() => {
+  return fullName.value.trim() && 
+         phoneNumber.value.trim() && 
+         detailedAddress.value.trim() && 
+         selectedDivision.value && 
+         selectedDistrict.value && 
+         selectedUpazila.value && 
+         locationSelected.value
+})
+
+const onlineProviders = [
+  { id: 'bkash', name: 'bKash', logo: 'https://logos-download.com/wp-content/uploads/2022/01/BKash_Logo-700x644.png' },
+  { id: 'nagad', name: 'Nagad', logo: 'https://logos-download.com/wp-content/uploads/2022/01/Nagad_Logo-700x247.png' },
+  { id: 'rocket', name: 'Rocket', logo: 'https://logos-download.com/wp-content/uploads/2022/01/Dutch_Bangla_Bank_Rocket_Logo-700x388.png' },
+  { id: 'card', name: 'Card', logo: 'https://logos-download.com/wp-content/uploads/2016/03/Mastercard_Logo_2016-700x429.png' }
+]
+
+const handlePlaceOrder = () => {
+    if (!isFormValid.value) {
+        showValidationModal.value = true
+        return
+    }
+    isReviewing.value = true
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const confirmFinalOrder = () => {
+    // Final Step: Generate ID and show success
+    orderId.value = 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase()
+    isOrderConfirmed.value = true
+    isReviewing.value = false // Close review view for the success modal
+}
+
+const goBackToEdit = () => {
+    isReviewing.value = false
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const copyOrderId = () => {
+    if (!orderId.value) return
+    navigator.clipboard.writeText(orderId.value)
+    copiedOrderId.value = true
+    setTimeout(() => {
+        copiedOrderId.value = false
+    }, 2000)
+}
 let map = null
 let marker = null
 
@@ -975,6 +1288,357 @@ onUnmounted(() => {
 
 .fs-7 { font-size: 0.85rem; }
 .fs-8 { font-size: 0.75rem; }
+
+/* Payment Styles */
+.payment-options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.payment-method-item {
+    padding: 20px;
+    border: 1.5px solid #eee;
+    border-radius: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.payment-method-item:hover {
+    border-color: var(--brand);
+    background: rgba(111, 44, 45, 0.02);
+}
+
+.payment-method-item.active {
+    border-color: var(--brand);
+    background: rgba(111, 44, 45, 0.05);
+}
+
+.method-icon {
+    width: 45px;
+    height: 45px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: var(--brand);
+}
+
+.method-check {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: #eee;
+    font-size: 18px;
+    transition: all 0.3s ease;
+}
+
+.payment-method-item.active .method-check {
+    color: var(--brand);
+}
+
+.providers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.provider-card {
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.provider-card:hover { border-color: var(--brand); }
+.provider-card.active {
+    border-color: var(--brand);
+    background: #fffafa;
+    box-shadow: 0 4px 12px rgba(111, 44, 45, 0.1);
+}
+
+.provider-logo {
+    height: 40px;
+    margin-bottom: 8px;
+}
+
+.provider-logo img {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+}
+
+.provider-card span { font-size: 13px; font-weight: 600; color: #444; }
+
+.mini-check {
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    color: var(--brand);
+    font-size: 10px;
+}
+
+/* Validation & Overlays */
+.payment-lock-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(4px);
+    z-index: 10;
+    border-radius: 12px;
+}
+
+.lock-icon {
+    width: 60px;
+    height: 60px;
+    background: #f8f9fa;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #adb5bd;
+    border: 2px dashed #dee2e6;
+}
+
+/* Copy Button */
+.copy-id-btn {
+    border: none;
+    background: #fff;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    transition: all 0.2s;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.copy-id-btn:hover {
+    color: var(--brand);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(111, 44, 45, 0.1);
+}
+
+.copy-id-btn.copied {
+    background: #28a745;
+    color: white;
+}
+
+.copy-status {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #191919;
+    color: white;
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    font-weight: bold;
+    pointer-events: none;
+}
+
+.copy-status::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: #191919;
+}
+
+.scale-enter-active, .scale-leave-active { transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.scale-enter-from, .scale-leave-to { opacity: 0; transform: translateX(-50%) scale(0.5); }
+
+/* Success Modal */
+.success-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.success-modal-content {
+    background: white;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 30px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+}
+
+.success-icon-wrapper {
+    font-size: 80px;
+    color: #28a745;
+    animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.order-id-badge {
+    background: #f8f9fa;
+    border: 1px dashed #ddd;
+}
+
+/* Review View Styles */
+.review-view-container {
+    animation: fadeIn 0.5s ease;
+}
+
+.edit-review-btn {
+    background: #f8f9fa;
+    border: 1px solid #eee;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+    transition: all 0.2s;
+}
+
+.edit-review-btn:hover {
+    background: #eee;
+    color: var(--brand);
+    border-color: var(--brand);
+}
+
+.review-block {
+    background: #fff;
+    transition: all 0.3s ease;
+}
+
+.review-block:hover {
+    border-color: var(--brand) !important;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.02);
+}
+
+.info-avatar {
+    width: 45px;
+    height: 45px;
+    background: var(--brand);
+    color: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.letter-spacing-1 { letter-spacing: 1px; }
+
+.bg-brand-light {
+    background: rgba(111, 44, 45, 0.03);
+    border-color: rgba(111, 44, 45, 0.1) !important;
+}
+
+.review-product-table { border: 1px solid #f0f0f0; }
+
+.review-product-row {
+    transition: background 0.2s;
+}
+
+.review-product-row:hover { background: #fafafa; }
+
+.review-item-img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.last-border-0:last-child { border-bottom: none !important; }
+
+.italic { font-style: italic; }
+
+/* Validation Modal */
+.validation-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.validation-modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 40px 30px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modalPop {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.validation-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    box-shadow: 0 10px 25px rgba(255, 152, 0, 0.3);
+}
+
+.validation-icon-wrapper i {
+    font-size: 40px;
+    color: white;
+    animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+.fade-slide-enter-active, .fade-slide-leave-active { transition: all 0.3s ease; }
+.fade-slide-enter-from, .fade-slide-leave-to { opacity: 0; transform: translateY(-10px); }
+
 @media (max-width: 991px) {
    .product-row {
       flex-direction: column;
@@ -982,5 +1646,6 @@ onUnmounted(() => {
       gap: 15px;
    }
    .table-head { display: none !important; }
+   .payment-options-grid { grid-template-columns: 1fr; }
 }
 </style>
