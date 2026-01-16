@@ -61,26 +61,42 @@
 
             <!-- Seller Info Box -->
             <div class="seller-box mt-3">
-              <div class="d-flex align-items-center gap-3">
-                <div class="seller-logo">
-                  <img src="https://placehold.co/50x50" alt="Seller Logo">
+              <div class="seller-header">
+                <div class="seller-left">
+                  <div class="seller-logo">
+                    <img :src="sellerInfo.logo" alt="Seller Logo">
+                  </div>
+                  <div class="seller-details">
+                    <h6 class="seller-name mb-1">{{ sellerInfo.name }}</h6>
+                    <div class="seller-rating">
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star-half-stroke"></i>
+                      <span class="ms-1 rating-text">{{ sellerInfo.rating }}</span>
+                    </div>
+                  </div>
                 </div>
-                <div class="seller-details">
-                  <h6 class="seller-name mb-1">Tech World US</h6>
-                  <div class="seller-rating">
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star-half-stroke"></i>
-                    <span class="ms-1 text-muted">(4.8)</span>
+                <div class="seller-right">
+                  <div v-if="sellerInfo.isVerified" class="verification-badge verified" title="Verified Seller">
+                    <i class="fa-solid fa-shield-check"></i>
+                    <span>Verified</span>
+                  </div>
+                  <div v-else class="verification-badge unverified" title="Unverified Seller">
+                    <i class="fa-solid fa-shield-exclamation"></i>
+                    <span>Unverified</span>
                   </div>
                 </div>
               </div>
-              <div class="mt-2 text-center">
-                <NuxtLink to="#" class="btn-visit-store">Visit Store</NuxtLink>
+              <div class="seller-footer">
+                <NuxtLink to="#" class="primary-btn py-2 justify-content-center">
+                  <i class="fa-solid fa-store"></i>
+                  Visit Store
+                </NuxtLink>
               </div>
             </div>
+        
         
           </div>
         </div>
@@ -139,6 +155,13 @@ onMounted(() => {
   setTimeout(() => {
     isMounted.value = true;
   }, 800);
+});
+
+const sellerInfo = ref({
+  name: 'Tech World US',
+  isVerified: true,
+  rating: 4.8,
+  logo: 'https://placehold.co/50x50'
 });
 
 const productData = {
@@ -400,43 +423,201 @@ const similarProductConfig = {
   font-size: 13px;
 }
 
-/* Seller Box */
+/* Seller Box - Premium Design */
 .seller-box {
-  border-top: 1px solid #eee;
-  padding-top: 15px;
+  border: 1px solid #e5e7eb;
+  background: linear-gradient(to bottom, #ffffff, #fafafa);
+  padding: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.seller-box:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.seller-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  flex-direction: column;
+  background: white;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.seller-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.seller-logo {
+  flex-shrink: 0;
 }
 
 .seller-logo img {
   border-radius: 50%;
-  border: 1px solid #eee;
+  border: 2px solid #e5e7eb;
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  transition: all 0.3s ease;
+}
+
+.seller-box:hover .seller-logo img {
+  border-color: var(--brand);
+  transform: scale(1.05);
+}
+
+.seller-details {
+  flex: 1;
+  min-width: 0;
 }
 
 .seller-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.2px;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .seller-rating {
-  font-size: 12px;
-  color: #ffa41c;
+  font-size: 13px;
+  color: #fbbf24;
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
-.btn-visit-store {
-  display: inline-block;
-  border: 1px solid #ddd;
-  background: white;
-  padding: 4px 12px;
-  border-radius: 12px;
+.seller-rating .rating-text {
+  color: #6b7280;
+  font-weight: 600;
   font-size: 12px;
-  color: #333;
-  text-decoration: none;
-  transition: all 0.2s;
 }
 
-.btn-visit-store:hover {
-  background: #f7f7f7;
-  border-color: #999;
+.seller-right {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.seller-footer {
+  padding: 12px 16px;
+  background: #f9fafb;
+  text-align: center;
+}
+
+ 
+ 
+
+
+/* Verification Badge Styles */
+.verification-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 24px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.verification-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.6s;
+}
+
+.verification-badge:hover::before {
+  left: 100%;
+}
+
+.verification-badge.verified {
+  background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+  color: white;
+  border: 2px solid #059669;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4), 0 0 20px rgba(16, 185, 129, 0.2);
+}
+
+.verification-badge.verified:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.5), 0 0 30px rgba(16, 185, 129, 0.3);
+}
+
+.verification-badge.verified i {
+  font-size: 15px;
+  animation: verifiedPulse 2s infinite;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+@keyframes verifiedPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+.verification-badge.unverified {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #fbbf24 100%);
+  color: white;
+  border: 2px solid #d97706;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4), 0 0 20px rgba(245, 158, 11, 0.2);
+}
+
+.verification-badge.unverified:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.5), 0 0 30px rgba(245, 158, 11, 0.3);
+}
+
+.verification-badge.unverified i {
+  font-size: 15px;
+  animation: unverifiedShake 3s infinite;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+@keyframes unverifiedShake {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(5deg);
+  }
+}
+
+/* Enhanced Seller Name */
+.seller-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+  letter-spacing: -0.2px;
 }
 
 /* Success Toast Styles */
