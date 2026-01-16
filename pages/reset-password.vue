@@ -46,7 +46,7 @@
                   </div>
 
                   <!-- Submit Button -->
-                  <button type="submit" class="primary-btn reset-btn py-3 justify-content-center fw-bold w-100" :disabled="isSubmitting || !passwordsMatch">
+                  <button type="submit" class="primary-btn reset-btn py-3 justify-content-center fw-bold w-100" :disabled="isSubmitting">
                     <i v-if="isSubmitting" class="fa-solid fa-circle-notch fa-spin me-2"></i>
                     Update Password
                   </button>
@@ -58,16 +58,16 @@
       </div>
     </main>
 
-    <!-- Success Toast Notification -->
+    <!-- Universal Toast Notification -->
     <Transition name="toast-pop">
-      <div v-if="showSuccessToast" class="success-toast">
+      <div v-if="showToast" class="success-toast" :class="{ 'error-toast': toastType === 'error' }">
         <div class="d-flex align-items-center gap-3">
-          <div class="toast-icon bg-success-light">
-             <i class="fa-solid fa-circle-check text-success"></i>
+          <div class="toast-icon" :class="toastType === 'success' ? 'bg-success-light' : 'bg-danger-light'">
+             <i class="fa-solid" :class="toastType === 'success' ? 'fa-circle-check text-success' : 'fa-circle-exclamation text-danger'"></i>
           </div>
           <div class="d-flex flex-column">
-             <span class="fw-bold text-dark">Success!</span>
-             <span class="text-muted small">Password updated successfully! Redirecting...</span>
+             <span class="fw-bold text-dark">{{ toastType === 'success' ? 'Success!' : 'Error!' }}</span>
+             <span class="text-muted small">{{ toastMsg }}</span>
           </div>
         </div>
       </div>
@@ -79,25 +79,39 @@
 const newPassword = ref('')
 const confirmPassword = ref('')
 const isSubmitting = ref(false)
-const showSuccessToast = ref(false)
+const showToast = ref(false)
+const toastMsg = ref('')
+const toastType = ref('success')
 
-const passwordsMatch = computed(() => {
-  return newPassword.value && newPassword.value === confirmPassword.value
-})
+const triggerToast = (msg, type = 'success') => {
+    toastMsg.value = msg
+    toastType.value = type
+    showToast.value = true
+    setTimeout(() => {
+        showToast.value = false
+    }, 3000)
+}
 
 const handleResetSuccess = async () => {
-  if (!passwordsMatch.value) return
-  
-  isSubmitting.value = true
-  await new Promise(resolve => setTimeout(resolve, 1500))
-  
-  showSuccessToast.value = true
-  isSubmitting.value = false
+    if (!newPassword.value || !confirmPassword.value) {
+        triggerToast('Please fill in both fields', 'error')
+        return
+    }
 
-  setTimeout(() => {
-    showSuccessToast.value = false
-    navigateTo('/login')
-  }, 2000)
+    if (newPassword.value !== confirmPassword.value) {
+        triggerToast('Passwords do not match!', 'error')
+        return
+    }
+    
+    isSubmitting.value = true
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    
+    triggerToast('Password updated successfully! Redirecting...', 'success')
+    isSubmitting.value = false
+
+    setTimeout(() => {
+        navigateTo('/login')
+    }, 2000)
 }
 </script>
 

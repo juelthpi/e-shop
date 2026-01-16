@@ -15,9 +15,27 @@
             <!-- Right Side: Form -->
             <div class="col-lg-6">
               <div class="auth-form-wrapper p-4 p-md-5 h-100 d-flex flex-column justify-content-center">
-                <div class="text-center mb-5">
+                <div class="text-center mb-4">
                   <h2 class="auth-title">Sign Up</h2>
                   <p class="text-muted small mt-2">Create your account to start shopping</p>
+                </div>
+
+                <!-- Signup Method Tabs -->
+                <div class="auth-tabs d-flex p-1 bg-light rounded-4 mb-4">
+                  <button 
+                    class="auth-tab flex-grow-1 py-3" 
+                    :class="{ active: signupMethod === 'phone' }"
+                    @click="signupMethod = 'phone'"
+                  >
+                    <i class="fa-solid fa-phone me-2"></i> Phone
+                  </button>
+                  <button 
+                    class="auth-tab flex-grow-1 py-3" 
+                    :class="{ active: signupMethod === 'email' }"
+                    @click="signupMethod = 'email'"
+                  >
+                    <i class="fa-solid fa-envelope me-2"></i> Email
+                  </button>
                 </div>
 
                 <form @submit.prevent="handleSignup" class="signup-form">
@@ -33,10 +51,10 @@
                     >
                   </div>
 
-                  <!-- Phone Field with Integrated Country Code -->
-                  <div class="form-group mb-4">
+                  <!-- Phone Field (Conditional) -->
+                  <div v-if="signupMethod === 'phone'" class="form-group mb-4">
                     <label class="form-label fw-bold mb-2">Phone <span class="text-danger">*</span></label>
-                    <div class="phone-input-group d-flex align-items-center   form-control-custom position-relative">
+                    <div class="phone-input-group d-flex align-items-center form-control-custom position-relative">
                        <!-- Custom Selector -->
                        <div class="country-selector-wrapper position-relative" v-outside-click="() => showCountryList = false">
                           <div 
@@ -52,7 +70,7 @@
                           <Transition name="fade-down">
                             <div v-if="showCountryList" class="phone-country-dropdown shadow-lg border-0 rounded-4 mt-2">
                                <!-- Search Filter -->
-                               <div class="px-3  border-bottom sticky-top bg-white rounded-top-4">
+                               <div class="px-3 border-bottom sticky-top bg-white rounded-top-4">
                                   <input 
                                     type="text" 
                                     v-model="countrySearch" 
@@ -92,11 +110,23 @@
                        <input 
                         type="tel" 
                         v-model="form.phone" 
-                        class="form-control-minimal flex-grow-1 px-3   border-0" 
+                        class="form-control-minimal flex-grow-1 px-3 border-0" 
                         placeholder="017XXX XXXXXX" 
-                        required
+                        :required="signupMethod === 'phone'"
                        >
                     </div>
+                  </div>
+
+                  <!-- Email Field (Conditional) -->
+                  <div v-else class="form-group mb-4">
+                    <label class="form-label fw-bold mb-2">Email Address <span class="text-danger">*</span></label>
+                    <input 
+                      type="email" 
+                      v-model="form.email" 
+                      class="form-control-custom w-100" 
+                      placeholder="example@mail.com" 
+                      :required="signupMethod === 'email'"
+                    >
                   </div>
 
                   <!-- Password Field -->
@@ -134,9 +164,12 @@
 <script setup>
 const { loginOrUpdateUser } = useUser()
 
+const signupMethod = ref('phone') // 'phone' or 'email'
+
 const form = ref({
     name: '',
     phone: '',
+    email: '',
     password: ''
 })
 
@@ -210,8 +243,8 @@ const handleSignup = async () => {
     // Log the user in (mock)
     loginOrUpdateUser({
         name: form.value.name,
-        phone: selectedCountry.value.code + form.value.phone,
-        email: '',
+        phone: signupMethod.value === 'phone' ? (selectedCountry.value.code + form.value.phone) : '',
+        email: signupMethod.value === 'email' ? form.value.email : '',
         address: ''
     })
     
@@ -238,4 +271,37 @@ const vOutsideClick = {
 <style scoped>
 .signup-page { background: #fdfdfd; }
 .x-small { font-size: 10px; }
+
+/* Auth Tabs */
+.auth-tabs {
+    border: 1px solid #eee;
+}
+
+.auth-tab {
+    background: transparent;
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+    color: #888;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-tab i {
+    font-size: 16px;
+    opacity: 0.6;
+}
+
+.auth-tab.active {
+    background: #fff;
+    color: var(--brand);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.auth-tab.active i {
+    opacity: 1;
+}
+
+.fade-down-enter-active, .fade-down-leave-active { transition: all 0.2s ease; }
+.fade-down-enter-from, .fade-down-leave-to { opacity: 0; transform: translateY(-10px); }
 </style>

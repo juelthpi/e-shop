@@ -17,7 +17,7 @@
               <div class="auth-form-wrapper p-4 p-md-5 h-100 d-flex flex-column justify-content-center">
                 <div class="text-center mb-5">
                   <h2 class="auth-title">Verify OTP</h2>
-                  <p class="text-muted small mt-2">We've sent a 6-digit code to your phone number. Please enter it below to continue.</p>
+                  <p class="text-muted small mt-2">We've sent a 6-digit code to your contact info. Please enter it below to continue.</p>
                 </div>
 
                 <form @submit.prevent="handleVerify" class="otp-form">
@@ -142,7 +142,7 @@ const handlePaste = (e) => {
 }
 
 const handleResend = () => {
-  toastMessage.value = 'A new OTP has been sent to your phone.'
+  toastMessage.value = 'A new OTP has been sent to your contact info.'
   showSuccessToast.value = true
   startTimer()
   setTimeout(() => {

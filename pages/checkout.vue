@@ -21,14 +21,29 @@
           <div class="step-num"><i class="fa-solid fa-check animate-check check-3"></i></div>
           <div class="step-label">Checkout</div>
         </div>
-        <div class="stepper-line"></div>
-        <div class="stepper-item">
-          <div class="step-num">4</div>
+        <div class="stepper-line" :class="{ active: isReviewing || isOrderConfirmed || cart.length === 0 }"></div>
+        <div class="stepper-item" :class="{ active: isReviewing || isOrderConfirmed || cart.length === 0 }">
+          <div class="step-num">
+            <i v-if="isOrderConfirmed || cart.length === 0" class="fa-solid fa-check animate-check check-4"></i>
+            <template v-else>4</template>
+          </div>
           <div class="step-label">Payment</div>
         </div>
       </div>
 
-      <Transition name="fade-slide" mode="out-in">
+      <!-- Empty Cart State -->
+      <div v-if="cart.length === 0 && !isOrderConfirmed" class="empty-checkout-container py-5 text-center mt-5">
+          <div class="empty-cart-icon mb-4">
+              <i class="fa-solid fa-cart-shopping-slash text-muted opacity-25" style="font-size: 80px;"></i>
+          </div>
+          <h2 class="fw-bold mb-3">Your Cart is Empty</h2>
+          <p class="text-muted mb-5 mx-auto" style="max-width: 400px;">Looks like you haven't added any products to your cart yet. Please add some items to proceed with checkout.</p>
+          <NuxtLink to="/" class="primary-btn px-5 py-3 d-inline-flex justify-content-center">
+              <i class="fa-solid fa-basket-shopping me-2"></i> Start Shopping
+          </NuxtLink>
+      </div>
+
+      <Transition v-else name="fade-slide" mode="out-in">
         <div v-if="!isReviewing" key="checkout-form">
           <div class="row gy-4">
             <!-- Left Column: Shipping & Products -->
@@ -45,7 +60,7 @@
             </div>
             
             <div class="product-list-container">
-               <div v-if="cart.length > 0">
+                <div>
                   <div class="vendor-header p-3 d-flex align-items-center gap-3">
                       <label class="checkbox-container-custom mb-0">
                         <input type="checkbox" checked disabled>
@@ -59,7 +74,7 @@
                      <div class="table-head d-flex px-4 py-2 text-uppercase text-muted small fw-bold">
                         <div style="flex: 2">Product</div>
                         <div style="flex: 1" class="text-center">Price</div>
-                        <div style="flex: 1" class="text-end pe-4">Actions</div>
+                        <div style="flex: 1" class="text-end pe-4 d-none">Actions</div>
                      </div>
                      
                      <div v-for="item in cart" :key="item.cartItemId" class="product-row d-flex align-items-center px-4 py-4 border-top">
@@ -79,7 +94,7 @@
                         <div style="flex: 1" class="text-center fw-bold text-black fs-5">
                            ৳{{ (parseFloat(item.price.toString().replace(/[^\d.]/g, '')) * item.quantity).toFixed(2) }}
                         </div>
-                        <div style="flex: 1" class="text-end pe-4">
+                        <div style="flex: 1" class="text-end pe-4 d-none">
                            <div class="qty-control-disabled d-inline-flex align-items-center gap-3 p-1 px-3 rounded-pill border bg-light opacity-75">
                               <span class="qty-btn-disabled">-</span>
                               <span class="qty-val fw-bold">{{ item.quantity }}</span>
@@ -87,27 +102,18 @@
                            </div>
                         </div>
                      </div>
-                  </div>
-               </div>
-               <div v-else class="p-5 text-center bg-white">
-                 <p class="text-muted">Your cart is empty. <NuxtLink to="/category" class="text-brand">Go shopping</NuxtLink></p>
-               </div>
+                   </div>
+                </div>
             </div>
           </div>
 
           <!-- Shipping Form Card -->
-          <div class="checkout-card mb-4 p-4 p-md-5">
+          <div class="checkout-card mb-4 p-4 p-md-5 text-start">
             <div class="d-flex align-items-center justify-content-between mb-4">
               <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
                 <i class="fa-solid fa-truck-fast text-brand"></i> Shipping Information
               </h5>
-              <button 
-                v-if="user" 
-                class="btn btn-brand-light btn-sm rounded-pill px-3 fw-bold"
-                @click="autoFillFromProfile"
-              >
-                <i class="fa-solid fa-address-book me-2"></i> Use Saved Info
-              </button>
+              
             </div>
             <div class="row gy-4">
               <!-- Left Column: Personal Info -->
@@ -175,7 +181,74 @@
                     </div>
                 </div>
 
-                <!-- Google Maps Picker -->
+                <!-- Delivery Options: Area & Speed -->
+                <div class="mb-4">
+                  <div class="row g-3">
+                    <!-- Delivery Area -->
+                    <div class="col-12">
+                      <label class="form-label fw-bold mb-2">Delivery Area</label>
+                      <div class="delivery-option-grid">
+                        <div 
+                          class="delivery-option-item" 
+                          :class="{ active: deliveryArea === 'inside' }"
+                          @click="deliveryArea = 'inside'"
+                        >
+                          <div class="option-icon"><i class="fa-solid fa-city"></i></div>
+                          <div class="option-content">
+                            <span class="fw-bold d-block">Inside City</span>
+                            <span class="text-muted small">Standard courier</span>
+                          </div>
+                          <div class="option-price">৳60</div>
+                        </div>
+                        <div 
+                          class="delivery-option-item" 
+                          :class="{ active: deliveryArea === 'outside' }"
+                          @click="deliveryArea = 'outside'"
+                        >
+                          <div class="option-icon"><i class="fa-solid fa-truck-moving"></i></div>
+                          <div class="option-content">
+                            <span class="fw-bold d-block">Outside City</span>
+                            <span class="text-muted small">Express courier</span>
+                          </div>
+                          <div class="option-price">৳120</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Delivery Type -->
+                    <div class="col-12">
+                      <label class="form-label fw-bold mb-2">Delivery Type</label>
+                      <div class="delivery-option-grid">
+                        <div 
+                          class="delivery-option-item" 
+                          :class="{ active: deliveryType === 'regular' }"
+                          @click="deliveryType = 'regular'"
+                        >
+                          <div class="option-icon"><i class="fa-solid fa-clock"></i></div>
+                          <div class="option-content">
+                            <span class="fw-bold d-block">Regular</span>
+                            <span class="text-muted small">4-7 Days</span>
+                          </div>
+                          <div class="option-price">Free</div>
+                        </div>
+                        <div 
+                          class="delivery-option-item" 
+                          :class="{ active: deliveryType === 'express' }"
+                          @click="deliveryType = 'express'"
+                        >
+                          <div class="option-icon"><i class="fa-solid fa-bolt text-warning"></i></div>
+                          <div class="option-content">
+                            <span class="fw-bold d-block">Express</span>
+                            <span class="text-muted small">2-4 Days</span>
+                          </div>
+                          <div class="option-price">+৳50</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Google Maps Picker (Optional Now) -->
                 <div class="form-group mb-4">
                    <div class="map-picker-container rounded-3 overflow-hidden border" @click="openMapModal">
                       <div class="map-placeholder position-relative cursor-pointer" style="height: 140px;">
@@ -247,14 +320,22 @@
                   <i class="fa-solid fa-lock"></i>
                 </div>
                 <h6 class="fw-bold mb-2">Payment Section Locked</h6>
-                <p class="small text-muted mb-0">Please fill in your name, phone, address, and select a location on the map to unlock payment options.</p>
+                <p class="small text-muted mb-0">Please fill in your name, phone, address, and select a location to unlock payment options.</p>
               </div>
             </Transition>
 
-            <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+           <div class="d-flex align-items-center gap-2 justify-content-between mb-4">
+             <h5 class="fw-bold  d-flex align-items-center gap-2">
               <i class="fa-solid fa-credit-card text-brand"></i> Payment Method
             </h5>
-            
+            <button 
+                v-if="user" 
+                class="btn btn-brand-light  rounded-pill px-3 fw-bold"
+                @click="autoFillFromProfile"
+              >
+                <i class="fa-solid fa-address-book me-2"></i> Use Saved Info
+              </button>
+           </div>
             <div class="payment-options-grid mb-4">
               <!-- COD Option -->
               <div 
@@ -336,10 +417,10 @@
               </div>
               <div class="summary-item d-flex justify-content-between mb-3 text-muted">
                 <div class="d-flex flex-column">
-                  <span>Standard Delivery</span>
-                  <small class="text-brand">Keedlee</small>
+                  <span>Delivery Charge</span>
+                  <small class="text-brand">{{ deliveryType === 'express' ? 'Express' : 'Regular' }} ({{ deliveryArea === 'inside' ? 'Inside' : 'Outside' }} City)</small>
                 </div>
-                <span class="text-dark fw-bold">৳0</span>
+                <span class="text-dark fw-bold">৳{{ shippingCharge.toFixed(2) }}</span>
               </div>
               <div class="summary-item d-flex justify-content-between mb-3 text-muted">
                 <span>Discount</span>
@@ -348,7 +429,7 @@
               <div class="divider my-3"></div>
               <div class="summary-item d-flex justify-content-between mb-4">
                 <h6 class="fw-bold mb-0 text-black">Total Payable</h6>
-                <h6 class="fw-bold text-brand mb-0">৳{{ subtotal.toFixed(2) }}</h6>
+                <h6 class="fw-bold text-brand mb-0">৳{{ totalPayable.toFixed(2) }}</h6>
               </div>
             </div>
 
@@ -361,10 +442,10 @@
     </div>
 
         <div v-else key="order-review">
-          <div class="review-view-container">
+          <div class="review-view-container text-start">
             <div class="row gy-4">
               <div class="col-lg-8">
-                <div class="checkout-card p-4 p-md-5 mb-4">
+                <div class="checkout-card p-4 p-md-5 mb-4 text-start">
                 <div class="d-flex align-items-center justify-content-between mb-4">
                   <h5 class="fw-bold m-0 d-flex align-items-center gap-2">
                     <i class="fa-solid fa-rectangle-list text-brand"></i> Review Your Order
@@ -404,6 +485,10 @@
                       <h6 class="text-muted small text-uppercase fw-bold mb-3 letter-spacing-1">Delivery Address</h6>
                       <p class="mb-1 fw-bold">{{ detailedAddress }}</p>
                       <p class="text-muted small mb-0">{{ selectedUpazila }}, {{ selectedDistrict }}, {{ selectedDivision }}</p>
+                      <div class="mt-2 d-flex gap-2">
+                        <span class="badge bg-primary-subtle text-primary border-primary-subtle px-2 py-1 small">{{ deliveryArea === 'inside' ? 'Inside City' : 'Outside City' }}</span>
+                        <span class="badge bg-warning-subtle text-warning-emphasis border-warning-subtle px-2 py-1 small">{{ deliveryType === 'express' ? 'Express' : 'Regular' }}</span>
+                      </div>
                       <div v-if="additionalInstructions" class="mt-3 p-2 bg-light rounded small text-muted italic">
                         "{{ additionalInstructions }}"
                       </div>
@@ -458,13 +543,13 @@
                        <span class="fw-bold">৳{{ subtotal.toFixed(2) }}</span>
                     </div>
                     <div class="summary-item d-flex justify-content-between mb-2">
-                       <span class="text-muted">Shipping</span>
-                       <span class="fw-bold text-success font-monospace">FREE</span>
+                       <span class="text-muted">Shipping ({{ deliveryType === 'express' ? 'Express' : 'Regular' }})</span>
+                       <span class="fw-bold">৳{{ shippingCharge.toFixed(2) }}</span>
                     </div>
                     <div class="divider my-3"></div>
                     <div class="summary-item d-flex justify-content-between align-items-center">
                        <span class="h6 fw-bold mb-0">Total Payable</span>
-                       <span class="h4 fw-bold text-brand mb-0">৳{{ subtotal.toFixed(2) }}</span>
+                       <span class="h4 fw-bold text-brand mb-0">৳{{ totalPayable.toFixed(2) }}</span>
                     </div>
                  </div>
 
@@ -511,21 +596,34 @@
              <p class="text-muted mb-4 px-md-5">Thank you for your purchase. We've received your order and the Order ID is generated for tracking.</p>
              
              <div class="order-id-badge p-4 rounded-4 mb-4 position-relative">
-                <span class="d-block text-muted small text-uppercase fw-bold mb-1">Your Order ID</span>
-                <div class="d-flex align-items-center justify-content-center gap-3">
-                  <span class="h3 fw-bold text-brand mb-0">{{ orderId }}</span>
-                  <button class="copy-id-btn" @click="copyOrderId" :class="{ copied: copiedOrderId }">
-                    <i class="fa-solid" :class="copiedOrderId ? 'fa-check' : 'fa-copy'"></i>
-                    <Transition name="scale">
-                      <span v-if="copiedOrderId" class="copy-status">Copied!</span>
-                    </Transition>
-                  </button>
+                <div class="row g-3">
+                  <div class="col-md-6 border-end">
+                    <span class="d-block text-muted small text-uppercase fw-bold mb-1">Your Order ID</span>
+                    <div class="d-flex align-items-center justify-content-center gap-3">
+                      <span class="h3 fw-bold text-brand mb-0">{{ orderId }}</span>
+                      <button class="copy-id-btn" @click="copyToClipboard(orderId)" :class="{ copied: copiedId === orderId }">
+                        <i class="fa-solid" :class="copiedId === orderId ? 'fa-check' : 'fa-copy'"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <span class="d-block text-muted small text-uppercase fw-bold mb-1">Temp Password</span>
+                    <div class="d-flex align-items-center justify-content-center gap-3">
+                      <span class="h3 fw-bold text-dark mb-0 font-monospace">{{ tempPassword }}</span>
+                      <button class="copy-id-btn" @click="copyToClipboard(tempPassword)" :class="{ copied: copiedId === tempPassword }">
+                        <i class="fa-solid" :class="copiedId === tempPassword ? 'fa-check' : 'fa-copy'"></i>
+                      </button>
+                    </div>
+                  </div>
                 </div>
+                <Transition name="scale">
+                   <div v-if="copiedId" class="copy-status-floating">Copied!</div>
+                </Transition>
              </div>
 
              <div class="d-flex flex-column gap-3">
                 <NuxtLink to="/user-dashboard" class="primary-btn w-100 justify-content-center">Go to Dashboard</NuxtLink>
-                <NuxtLink to="/" class="btn btn-outline-dark rounded-pill py-3 fw-bold text-decoration-none">Continue Shopping</NuxtLink>
+                <NuxtLink to="/" class="btn btn-outline-dark rounded-pill p-lg py-3 fw-bold text-decoration-none">Continue Shopping</NuxtLink>
              </div>
           </div>
         </div>
@@ -559,9 +657,15 @@ const additionalInstructions = ref('')
 // Payment Selection
 const selectedPaymentMethod = ref('cod')
 const selectedOnlineProvider = ref(null)
+
+// Delivery Options
+const deliveryArea = ref('inside') // 'inside' or 'outside'
+const deliveryType = ref('regular') // 'regular' or 'express'
+
 const isOrderConfirmed = ref(false)
 const orderId = ref(null)
-const copiedOrderId = ref(false)
+const tempPassword = ref(null)
+const copiedId = ref(null)
 const isReviewing = ref(false)
 const showValidationModal = ref(false)
 const validationModalTitle = ref('Incomplete Information')
@@ -573,8 +677,20 @@ const isFormValid = computed(() => {
          detailedAddress.value.trim() && 
          selectedDivision.value && 
          selectedDistrict.value && 
-         selectedUpazila.value && 
-         locationSelected.value
+         selectedUpazila.value
+})
+
+const shippingCharge = computed(() => {
+  if (cart.value.length === 0) return 0
+  let charge = deliveryArea.value === 'inside' ? 60 : 120
+  if (deliveryType.value === 'express') {
+    charge += 50
+  }
+  return charge
+})
+
+const totalPayable = computed(() => {
+  return subtotal.value + shippingCharge.value
 })
 
 const onlineProviders = [
@@ -616,27 +732,29 @@ const confirmFinalOrder = () => {
     const newOrderId = 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase()
     orderId.value = newOrderId
 
-    // 2. Only update session/profile if it's the first time or as requested
-    // If user exists, we don't overwrite their SAVED profile with this order's info
-    if (!user.value) {
-        loginOrUpdateUser({
-            name: fullName.value,
-            phone: phoneNumber.value,
-            email: email.value,
-            address: detailedAddress.value,
-            division: selectedDivision.value,
-            district: selectedDistrict.value,
-            upazila: selectedUpazila.value,
-            avatar: null
-        })
-    }
+    // 2. Generate Temp Password and Update User
+    const newTempPassword = Math.random().toString(36).substr(2, 6).toUpperCase()
+    tempPassword.value = newTempPassword
+
+    // If user exists, we still update their temp password so they can use it for Change Password
+    loginOrUpdateUser({
+        name: fullName.value,
+        phone: phoneNumber.value,
+        email: email.value,
+        address: detailedAddress.value,
+        division: selectedDivision.value,
+        district: selectedDistrict.value,
+        upazila: selectedUpazila.value,
+        avatar: user.value?.avatar || null,
+        tempPassword: newTempPassword
+    })
 
     // 3. Add Order to History
     addOrder({
         id: newOrderId,
         date: new Date().toISOString(),
         items: [...cart.value],
-        total: subtotal.value,
+        total: totalPayable.value,
         status: 'Pending',
         paymentMethod: selectedPaymentMethod.value,
         shipping: {
@@ -644,7 +762,10 @@ const confirmFinalOrder = () => {
             phone: phoneNumber.value,
             email: email.value,
             address: detailedAddress.value,
-            location: `${selectedUpazila.value}, ${selectedDistrict.value}`
+            location: `${selectedUpazila.value}, ${selectedDistrict.value}`,
+            deliveryArea: deliveryArea.value,
+            deliveryType: deliveryType.value,
+            shippingCharge: shippingCharge.value
         }
     })
 
@@ -674,12 +795,12 @@ const goBackToEdit = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-const copyOrderId = () => {
-    if (!orderId.value) return
-    navigator.clipboard.writeText(orderId.value)
-    copiedOrderId.value = true
+const copyToClipboard = (text) => {
+    if (!text) return
+    navigator.clipboard.writeText(text)
+    copiedId.value = text
     setTimeout(() => {
-        copiedOrderId.value = false
+        copiedId.value = null
     }, 2000)
 }
 let map = null
@@ -917,6 +1038,7 @@ onUnmounted(() => {
 
 .check-2 { animation-delay: 0.4s; }
 .check-3 { animation-delay: 0.8s; }
+.check-4 { animation-delay: 1.2s; }
 
 @keyframes checkPop {
    0%, 10% { opacity: 0; transform: scale(0.5); }
@@ -1724,6 +1846,69 @@ onUnmounted(() => {
 .fade-slide-enter-active, .fade-slide-leave-active { transition: all 0.3s ease; }
 .fade-slide-enter-from, .fade-slide-leave-to { opacity: 0; transform: translateY(-10px); }
 
+/* Delivery Options */
+.delivery-option-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.delivery-option-item {
+    background: #fff;
+    border: 2px solid #f0f0f0;
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.delivery-option-item:hover {
+    border-color: rgba(111, 44, 45, 0.3);
+    background: rgba(111, 44, 45, 0.02);
+}
+
+.delivery-option-item.active {
+    border-color: var(--brand);
+    background: rgba(111, 44, 45, 0.05);
+    box-shadow: 0 4px 15px rgba(111, 44, 45, 0.1);
+}
+
+.option-icon {
+    width: 32px;
+    height: 32px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brand);
+    font-size: 14px;
+}
+
+.delivery-option-item.active .option-icon {
+    background: var(--brand);
+    color: #fff;
+}
+
+.option-content {
+    flex-grow: 1;
+}
+
+.option-price {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--brand);
+    background: #fff;
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(111, 44, 45, 0.1);
+}
+
+.fs-8 { font-size: 0.75rem; }
+
 @media (max-width: 991px) {
    .product-row {
       flex-direction: column;
@@ -1732,5 +1917,19 @@ onUnmounted(() => {
    }
    .table-head { display: none !important; }
    .payment-options-grid { grid-template-columns: 1fr; }
+   .delivery-option-grid { grid-template-columns: 1fr; }
+}
+
+.copy-status-floating {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    z-index: 10;
 }
 </style>

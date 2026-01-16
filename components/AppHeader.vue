@@ -65,7 +65,7 @@
                 </template>
               </button>
 
-              <ul class="dropdown-menu dropdown-menu-end profile-menu shadow-lg border-0 rounded-4 mt-2 p-2" aria-labelledby="profileDropdown">
+              <ul class="dropdown-menu dropdown-menu-end profile-menu shadow-lg border-0 rounded-4  p-2" aria-labelledby="profileDropdown">
                 <template v-if="!user">
                     <li>
                       <nuxt-link class="dropdown-item rounded-3 mb-1" to="/login">
@@ -83,7 +83,7 @@
                 <template v-else>
                      <li>
                       <nuxt-link class="dropdown-item rounded-3 mb-1" to="/user-dashboard">
-                        <i class="fa-solid fa-gauge-high me-2 text-muted"></i>
+                        <i class="fa-solid fa-border-all me-2 text-muted"></i>
                         Dashboard
                       </nuxt-link>
                     </li>

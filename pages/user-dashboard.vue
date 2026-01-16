@@ -29,9 +29,9 @@
                     <button class="menu-item btn text-start border-0 fw-medium" :class="{ active: activeTab === 'password' }" @click="activeTab = 'password'">
                         <i class="fa-solid fa-key me-3"></i> Change Password
                     </button>
-                    <button class="menu-item btn text-start border-0 fw-medium" :class="{ active: activeTab === 'address' }" @click="activeTab = 'address'">
+                    <!-- <button class="menu-item btn text-start border-0 fw-medium" :class="{ active: activeTab === 'address' }" @click="activeTab = 'address'">
                         <i class="fa-solid fa-location-dot me-3"></i> Address
-                    </button>
+                    </button> -->
                     <button class="menu-item btn text-start border-0 fw-medium text-danger mt-4" @click="handleLogout">
                         <i class="fa-solid fa-right-from-bracket me-3"></i> Logout
                     </button>
@@ -263,8 +263,17 @@
                     
                     <div class="row g-4" style="max-width: 500px;">
                         <div class="col-12">
-                            <label class="form-label fw-bold text-muted">Current Password</label>
-                            <input type="password" v-model="passwordForm.currentPassword" class="form-control rounded-3 py-3" style="font-size: 16px;" placeholder="Enter current password">
+                            <label class="form-label fw-bold text-muted d-flex align-items-center justify-content-between">
+                                <span>Current Password</span>
+                                <span v-if="user?.tempPassword" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1 small">Using Temp Password</span>
+                            </label>
+                            <div class="position-relative">
+                                <input :type="showPass ? 'text' : 'password'" v-model="passwordForm.currentPassword" class="form-control rounded-3 py-3" style="font-size: 16px;" placeholder="Enter current password">
+                                <button class="btn position-absolute end-0 top-50 translate-middle-y border-0 text-muted" @click="showPass = !showPass">
+                                    <i class="fa-solid" :class="showPass ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                </button>
+                            </div>
+                            <p v-if="user?.tempPassword" class="text-muted small mt-2">Your temporary password is: <strong class="text-dark font-monospace">{{ user.tempPassword }}</strong></p>
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-bold text-muted">New Password</label>
@@ -501,10 +510,11 @@ const profileForm = ref({
 })
 
 const passwordForm = ref({
-    currentPassword: '',
+    currentPassword: user.value?.tempPassword || '',
     newPassword: '',
     confirmPassword: ''
 })
+const showPass = ref(false)
 const isUpdatingPassword = ref(false)
 const passwordSaveSuccess = ref(false)
 
@@ -578,7 +588,10 @@ const saveProfile = async () => {
 }
 
 const updatePassword = async () => {
-    if (!passwordForm.value.currentPassword || !passwordForm.value.newPassword) return
+    if (!passwordForm.value.currentPassword || !passwordForm.value.newPassword || !passwordForm.value.confirmPassword) {
+        triggerToast('Please fill up all password fields', 'error')
+        return
+    }
     
     if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
         triggerToast('Passwords do not match!', 'error')
@@ -591,6 +604,11 @@ const updatePassword = async () => {
     isUpdatingPassword.value = false
     triggerToast('Password updated successfully!')
     
+    // Clear temp password if it existed
+    if (user.value?.tempPassword) {
+        updateProfile({ tempPassword: null })
+    }
+
     // Clear form
     passwordForm.value = {
         currentPassword: '',
