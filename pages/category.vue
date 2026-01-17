@@ -125,6 +125,27 @@
     .category-sidebar-wrapper {
         width: 280px;
         flex-shrink: 0;
+        position: sticky;
+        top: 80px;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-right: 5px;
+    }
+
+    /* Custom Scrollbar */
+    .category-sidebar-wrapper::-webkit-scrollbar {
+        width: 4px;
+    }
+    .category-sidebar-wrapper::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    .category-sidebar-wrapper::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+    }
+    .category-sidebar-wrapper::-webkit-scrollbar-thumb:hover {
+        background: #aaa;
     }
     .category-content {
         flex-grow: 1;

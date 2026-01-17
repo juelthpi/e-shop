@@ -74,7 +74,7 @@
                      <div class="table-head d-flex px-4 py-2 text-uppercase text-muted small fw-bold">
                         <div style="flex: 2">Product</div>
                         <div style="flex: 1" class="text-center">Price</div>
-                        <div style="flex: 1" class="text-end pe-4 d-none">Actions</div>
+                        <div style="flex: 1" class="text-end pe-4">Actions</div>
                      </div>
                      
                      <div v-for="item in cart" :key="item.cartItemId" class="product-row d-flex align-items-center px-4 py-4 border-top">
@@ -87,18 +87,29 @@
                               <img :src="item.image" :alt="item.name">
                            </div>
                            <div class="flex-grow-1">
-                              <p class="product-name-checkout mb-1 fw-medium">{{ item.name }}</p>
-                              <div class="product-meta-badge">Size: {{ item.size || 'Medium' }}</div>
+                              <p class="product-name-checkout mb-2 fw-medium">{{ item.name }}</p>
+                              <div class="d-flex gap-2 flex-wrap">
+                                <div v-if="item.color" class="product-meta-badge">
+                                  <i class="fa-solid fa-palette me-1"></i>Color: {{ typeof item.color === 'object' ? item.color.name : item.color }}
+                                </div>
+                                <div class="product-meta-badge">
+                                  <i class="fa-solid fa-ruler me-1"></i>Size: {{ item.size || 'Medium' }}
+                                </div>
+                              </div>
                            </div>
                         </div>
                         <div style="flex: 1" class="text-center fw-bold text-black fs-5">
                            ৳{{ (parseFloat(item.price.toString().replace(/[^\d.]/g, '')) * item.quantity).toFixed(2) }}
                         </div>
-                        <div style="flex: 1" class="text-end pe-4 d-none">
-                           <div class="qty-control-disabled d-inline-flex align-items-center gap-3 p-1 px-3 rounded-pill border bg-light opacity-75">
-                              <span class="qty-btn-disabled">-</span>
+                        <div style="flex: 1" class="text-end pe-4">
+                           <div class="qty-control-active d-inline-flex align-items-center gap-3 p-1 px-3 rounded-pill border bg-white">
+                              <button class="qty-btn" @click="decreaseQuantity(item)" :disabled="item.quantity <= 1">
+                                <i class="fa-solid fa-minus"></i>
+                              </button>
                               <span class="qty-val fw-bold">{{ item.quantity }}</span>
-                              <span class="qty-btn-disabled">+</span>
+                              <button class="qty-btn" @click="increaseQuantity(item)">
+                                <i class="fa-solid fa-plus"></i>
+                              </button>
                            </div>
                         </div>
                      </div>
@@ -184,33 +195,38 @@
                 <!-- Delivery Options: Area & Speed -->
                 <div class="mb-4">
                   <div class="row g-3">
-                    <!-- Delivery Area -->
+                    <!-- Delivery Area / Zone -->
                     <div class="col-12">
-                      <label class="form-label fw-bold mb-2">Delivery Area</label>
-                      <div class="delivery-option-grid">
-                        <div 
-                          class="delivery-option-item" 
-                          :class="{ active: deliveryArea === 'inside' }"
-                          @click="deliveryArea = 'inside'"
-                        >
-                          <div class="option-icon"><i class="fa-solid fa-city"></i></div>
-                          <div class="option-content">
-                            <span class="fw-bold d-block">Inside City</span>
-                            <span class="text-muted small">Standard courier</span>
+                      <label class="form-label fw-bold mb-2">Delivery Zone <span class="text-danger">*</span></label>
+                      <div class="position-relative">
+                        <div class="searchable-select-wrapper" @click="toggleSelect('deliveryZone')">
+                          <div class="selected-val text-truncate small">
+                            <span v-if="selectedDeliveryZone">
+                              <i class="fa-solid fa-location-dot me-2 text-brand"></i>
+                              {{ selectedDeliveryZone.name }} - ৳{{ selectedDeliveryZone.price }}
+                            </span>
+                            <span v-else class="text-muted">Select delivery zone</span>
                           </div>
-                          <div class="option-price">৳60</div>
-                        </div>
-                        <div 
-                          class="delivery-option-item" 
-                          :class="{ active: deliveryArea === 'outside' }"
-                          @click="deliveryArea = 'outside'"
-                        >
-                          <div class="option-icon"><i class="fa-solid fa-truck-moving"></i></div>
-                          <div class="option-content">
-                            <span class="fw-bold d-block">Outside City</span>
-                            <span class="text-muted small">Express courier</span>
+                          <i class="fa-solid fa-angle-down small"></i>
+                          <div v-if="activeSelect === 'deliveryZone'" class="search-dropdown shadow-lg p-2" @click.stop>
+                            <input type="text" v-model="deliveryZoneSearch" placeholder="Search zone..." class="search-input mb-2">
+                            <ul class="options-list">
+                              <li 
+                                v-for="zone in filteredDeliveryZones" 
+                                :key="zone.id" 
+                                @click="selectDeliveryZone(zone)"
+                                class="delivery-zone-option"
+                              >
+                                <div class="d-flex align-items-center justify-content-between w-100">
+                                  <div class="d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-map-pin text-brand small"></i>
+                                    <span>{{ zone.name }}</span>
+                                  </div>
+                                  <span class="badge bg-brand-light text-brand px-2 py-1 small fw-bold">৳{{ zone.price }}</span>
+                                </div>
+                              </li>
+                            </ul>
                           </div>
-                          <div class="option-price">৳120</div>
                         </div>
                       </div>
                     </div>
@@ -283,6 +299,12 @@
                   <input type="checkbox" checked>
                   <span class="checkmark"></span>
                   <span class="label-text small">Make it default address</span>
+                </label>
+
+                <label class="checkbox-container-custom mt-3" v-if="!user">
+                  <input type="checkbox" v-model="createAccount">
+                  <span class="checkmark"></span>
+                  <span class="label-text small">Create an account with this information</span>
                 </label>
               </div>
             </div>
@@ -418,7 +440,7 @@
               <div class="summary-item d-flex justify-content-between mb-3 text-muted">
                 <div class="d-flex flex-column">
                   <span>Delivery Charge</span>
-                  <small class="text-brand">{{ deliveryType === 'express' ? 'Express' : 'Regular' }} ({{ deliveryArea === 'inside' ? 'Inside' : 'Outside' }} City)</small>
+                  <small class="text-brand">{{ deliveryType === 'express' ? 'Express' : 'Regular' }}{{ selectedDeliveryZone ? ' - ' + selectedDeliveryZone.name : '' }}</small>
                 </div>
                 <span class="text-dark fw-bold">৳{{ shippingCharge.toFixed(2) }}</span>
               </div>
@@ -485,8 +507,10 @@
                       <h6 class="text-muted small text-uppercase fw-bold mb-3 letter-spacing-1">Delivery Address</h6>
                       <p class="mb-1 fw-bold">{{ detailedAddress }}</p>
                       <p class="text-muted small mb-0">{{ selectedUpazila }}, {{ selectedDistrict }}, {{ selectedDivision }}</p>
-                      <div class="mt-2 d-flex gap-2">
-                        <span class="badge bg-primary-subtle text-primary border-primary-subtle px-2 py-1 small">{{ deliveryArea === 'inside' ? 'Inside City' : 'Outside City' }}</span>
+                      <div class="mt-2 d-flex gap-2 flex-wrap">
+                        <span v-if="selectedDeliveryZone" class="badge bg-primary-subtle text-primary border-primary-subtle px-2 py-1 small">
+                          <i class="fa-solid fa-location-dot me-1"></i>{{ selectedDeliveryZone.name }} - ৳{{ selectedDeliveryZone.price }}
+                        </span>
                         <span class="badge bg-warning-subtle text-warning-emphasis border-warning-subtle px-2 py-1 small">{{ deliveryType === 'express' ? 'Express' : 'Regular' }}</span>
                       </div>
                       <div v-if="additionalInstructions" class="mt-3 p-2 bg-light rounded small text-muted italic">
@@ -596,8 +620,8 @@
              <p class="text-muted mb-4 px-md-5">Thank you for your purchase. We've received your order and the Order ID is generated for tracking.</p>
              
              <div class="order-id-badge p-4 rounded-4 mb-4 position-relative">
-                <div class="row g-3">
-                  <div class="col-md-6 border-end">
+                <div class="row g-3 justify-content-center">
+                  <div class="col-md-6" :class="{'border-end': createAccount}">
                     <span class="d-block text-muted small text-uppercase fw-bold mb-1">Your Order ID</span>
                     <div class="d-flex align-items-center justify-content-center gap-3">
                       <span class="h3 fw-bold text-brand mb-0">{{ orderId }}</span>
@@ -606,7 +630,7 @@
                       </button>
                     </div>
                   </div>
-                  <div class="col-md-6">
+                  <div class="col-md-6" v-if="createAccount && tempPassword">
                     <span class="d-block text-muted small text-uppercase fw-bold mb-1">Temp Password</span>
                     <div class="d-flex align-items-center justify-content-center gap-3">
                       <span class="h3 fw-bold text-dark mb-0 font-monospace">{{ tempPassword }}</span>
@@ -622,7 +646,7 @@
              </div>
 
              <div class="d-flex flex-column gap-3">
-                <NuxtLink to="/user-dashboard" class="primary-btn w-100 justify-content-center">Go to Dashboard</NuxtLink>
+                <NuxtLink v-if="createAccount" to="/user-dashboard" class="primary-btn w-100 justify-content-center">Go to Dashboard</NuxtLink>
                 <NuxtLink to="/" class="btn btn-outline-dark rounded-pill p-lg py-3 fw-bold text-decoration-none">Continue Shopping</NuxtLink>
              </div>
           </div>
@@ -641,6 +665,18 @@ const breadcrumbItems = [
   { name: 'Checkout', link: '' }
 ]
 
+// Quantity Control Functions
+const increaseQuantity = (item) => {
+  item.quantity++
+}
+
+const decreaseQuantity = (item) => {
+  if (item.quantity > 1) {
+    item.quantity--
+  }
+}
+
+
 const deliveryLabel = ref('home')
 const activeSelect = ref(null)
 const locationSelected = ref(false)
@@ -658,8 +694,30 @@ const additionalInstructions = ref('')
 const selectedPaymentMethod = ref('cod')
 const selectedOnlineProvider = ref(null)
 
+// Delivery Zones - Admin will be able to define multiple zones
+const deliveryZones = [
+  { id: 'dhaka-city', name: 'Dhaka City Center', price: 60, area: 'inside' },
+  { id: 'dhaka-suburban', name: 'Dhaka Suburban', price: 80, area: 'inside' },
+  { id: 'uttara', name: 'Uttara', price: 70, area: 'inside' },
+  { id: 'mirpur', name: 'Mirpur', price: 70, area: 'inside' },
+  { id: 'gulshan', name: 'Gulshan', price: 60, area: 'inside' },
+  { id: 'banani', name: 'Banani', price: 60, area: 'inside' },
+  { id: 'dhanmondi', name: 'Dhanmondi', price: 65, area: 'inside' },
+  { id: 'mohammadpur', name: 'Mohammadpur', price: 75, area: 'inside' },
+  { id: 'savar', name: 'Savar', price: 100, area: 'outside' },
+  { id: 'gazipur', name: 'Gazipur', price: 120, area: 'outside' },
+  { id: 'narayanganj', name: 'Narayanganj', price: 120, area: 'outside' },
+  { id: 'chittagong', name: 'Chittagong', price: 150, area: 'outside' },
+  { id: 'sylhet', name: 'Sylhet', price: 150, area: 'outside' },
+  { id: 'rajshahi', name: 'Rajshahi', price: 140, area: 'outside' },
+  { id: 'khulna', name: 'Khulna', price: 140, area: 'outside' },
+  { id: 'barisal', name: 'Barisal', price: 130, area: 'outside' },
+]
+
+const selectedDeliveryZone = ref(null)
+const deliveryZoneSearch = ref('')
+
 // Delivery Options
-const deliveryArea = ref('inside') // 'inside' or 'outside'
 const deliveryType = ref('regular') // 'regular' or 'express'
 
 const isOrderConfirmed = ref(false)
@@ -671,18 +729,21 @@ const showValidationModal = ref(false)
 const validationModalTitle = ref('Incomplete Information')
 const validationModalMessage = ref('Please fill up all required shipping information to proceed with your order.')
 
+const createAccount = ref(true)
+
 const isFormValid = computed(() => {
   return fullName.value.trim() && 
          phoneNumber.value.trim() && 
          detailedAddress.value.trim() && 
          selectedDivision.value && 
          selectedDistrict.value && 
-         selectedUpazila.value
+         selectedUpazila.value &&
+         selectedDeliveryZone.value
 })
 
 const shippingCharge = computed(() => {
   if (cart.value.length === 0) return 0
-  let charge = deliveryArea.value === 'inside' ? 60 : 120
+  let charge = selectedDeliveryZone.value ? selectedDeliveryZone.value.price : 0
   if (deliveryType.value === 'express') {
     charge += 50
   }
@@ -732,22 +793,26 @@ const confirmFinalOrder = () => {
     const newOrderId = 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase()
     orderId.value = newOrderId
 
-    // 2. Generate Temp Password and Update User
-    const newTempPassword = Math.random().toString(36).substr(2, 6).toUpperCase()
-    tempPassword.value = newTempPassword
+    // 2. Generate Temp Password and Update User (Only if Create Account is checked)
+    if (createAccount.value) {
+        const newTempPassword = Math.random().toString(36).substr(2, 6).toUpperCase()
+        tempPassword.value = newTempPassword
 
-    // If user exists, we still update their temp password so they can use it for Change Password
-    loginOrUpdateUser({
-        name: fullName.value,
-        phone: phoneNumber.value,
-        email: email.value,
-        address: detailedAddress.value,
-        division: selectedDivision.value,
-        district: selectedDistrict.value,
-        upazila: selectedUpazila.value,
-        avatar: user.value?.avatar || null,
-        tempPassword: newTempPassword
-    })
+        // If user exists, we still update their temp password so they can use it for Change Password
+        loginOrUpdateUser({
+            name: fullName.value,
+            phone: phoneNumber.value,
+            email: email.value,
+            address: detailedAddress.value,
+            division: selectedDivision.value,
+            district: selectedDistrict.value,
+            upazila: selectedUpazila.value,
+            avatar: user.value?.avatar || null,
+            tempPassword: newTempPassword
+        })
+    } else {
+        tempPassword.value = null
+    }
 
     // 3. Add Order to History
     addOrder({
@@ -763,7 +828,8 @@ const confirmFinalOrder = () => {
             email: email.value,
             address: detailedAddress.value,
             location: `${selectedUpazila.value}, ${selectedDistrict.value}`,
-            deliveryArea: deliveryArea.value,
+            deliveryZone: selectedDeliveryZone.value ? selectedDeliveryZone.value.name : null,
+            deliveryZonePrice: selectedDeliveryZone.value ? selectedDeliveryZone.value.price : 0,
             deliveryType: deliveryType.value,
             shippingCharge: shippingCharge.value
         }
@@ -930,6 +996,12 @@ const filteredUpazilas = computed(() => {
    return upazilas.filter(u => u.toLowerCase().includes(upazilaSearch.value.toLowerCase()))
 })
 
+// Delivery Zone Filtering
+const filteredDeliveryZones = computed(() => {
+   if (!deliveryZoneSearch.value) return deliveryZones
+   return deliveryZones.filter(zone => zone.name.toLowerCase().includes(deliveryZoneSearch.value.toLowerCase()))
+})
+
 // Handlers
 const toggleSelect = (type) => {
    if (activeSelect.value === type) {
@@ -943,6 +1015,12 @@ const selectOption = (type, val) => {
    if (type === 'division') selectedDivision.value = val
    if (type === 'district') selectedDistrict.value = val
    if (type === 'upazila') selectedUpazila.value = val
+   activeSelect.value = null
+}
+
+const selectDeliveryZone = (zone) => {
+   selectedDeliveryZone.value = zone
+   deliveryZoneSearch.value = ''
    activeSelect.value = null
 }
 
@@ -1054,6 +1132,13 @@ onUnmounted(() => {
   border: 1px solid rgba(0,0,0,0.05);
 }
 
+.sticky-side-card {
+  position: sticky;
+  top: 20px;
+  align-self: flex-start;
+}
+
+
 /* Form Styling */
 .form-control-custom {
   width: 100%;
@@ -1131,6 +1216,20 @@ onUnmounted(() => {
    background: #f8f9fa;
    color: var(--brand);
 }
+
+.delivery-zone-option {
+   cursor: pointer;
+   border-bottom: 1px solid #f5f5f5;
+}
+
+.delivery-zone-option:last-child {
+   border-bottom: none;
+}
+
+.delivery-zone-option:hover {
+   background: linear-gradient(to right, rgba(111, 44, 45, 0.05), rgba(111, 44, 45, 0.02));
+}
+
 
 .label-btn {
   padding: 6px 22px;
@@ -1245,14 +1344,23 @@ onUnmounted(() => {
 }
 
 .product-meta-badge {
-   display: inline-block;
-   padding: 2px 10px;
-   background: #f8f9fa;
-   border: 1px solid #eee;
-   border-radius: 4px;
-   font-size: 12px;
-   color: #666;
+   display: inline-flex;
+   align-items: center;
+   gap: 3px;
+   padding: 4px 12px;
+   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+   border: 1px solid #dee2e6;
+   border-radius: 6px;
+   font-size: 11px;
+   font-weight: 600;
+   color: #495057;
 }
+
+.product-meta-badge i {
+   font-size: 10px;
+   color: var(--brand);
+}
+
 
 .qty-control-disabled {
    background: #fdfdfd;
@@ -1269,6 +1377,51 @@ onUnmounted(() => {
    font-size: 18px;
 }
 
+/* Active Quantity Controls */
+.qty-control-active {
+   background: white;
+   border-color: #ddd !important;
+   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+   transition: all 0.3s;
+}
+
+.qty-control-active:hover {
+   border-color: var(--brand) !important;
+   box-shadow: 0 4px 12px rgba(111, 44, 45, 0.15);
+}
+
+.qty-btn {
+   width: 28px;
+   height: 28px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   background: #f8f9fa;
+   border: none;
+   border-radius: 50%;
+   cursor: pointer;
+   font-size: 11px;
+   color: #666;
+   transition: all 0.2s;
+}
+
+.qty-btn:hover:not(:disabled) {
+   background: var(--brand);
+   color: white;
+   transform: scale(1.1);
+}
+
+.qty-btn:disabled {
+   opacity: 0.3;
+   cursor: not-allowed;
+}
+
+.qty-val {
+   min-width: 30px;
+   text-align: center;
+   font-size: 14px;
+   color: #333;
+}
 
 
  
