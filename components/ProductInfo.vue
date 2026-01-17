@@ -4,9 +4,47 @@
     
     <h1 class="product-title">{{ product.name }}</h1>
     
-    <div class="rating-section">
-      <span class="stars">★★★★★</span>
-      <span class="rating-count">{{ product.ratingCount }} ratings</span>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="rating-section mb-0">
+        <span class="stars">★★★★★</span>
+        <span class="rating-count">{{ product.ratingCount }} ratings</span>
+      </div>
+
+      <!-- Share System -->
+      <div class="position-relative" v-outside-click="closeShare">
+        <button 
+          class="share-btn" 
+          :class="{ active: showShareMenu }"
+          @click="toggleShare" 
+          title="Share Product"
+        >
+          <i class="fa-solid fa-share-nodes"></i>
+        </button>
+
+        <Transition name="fade-up">
+          <div v-if="showShareMenu" class="share-dropdown shadow-lg">
+             <div class="share-header">Share via</div>
+             <div class="share-options">
+                <a :href="facebookShare" target="_blank" class="share-item fb" title="Facebook">
+                   <i class="fa-brands fa-facebook-f"></i>
+                </a>
+                <a :href="twitterShare" target="_blank" class="share-item tw" title="Twitter">
+                   <i class="fa-brands fa-x-twitter"></i>
+                </a>
+                <a :href="whatsappShare" target="_blank" class="share-item wa" title="WhatsApp">
+                   <i class="fa-brands fa-whatsapp"></i>
+                </a>
+                <button class="share-item cp" @click="copyLink" title="Copy Link">
+                   <i class="fa-regular fa-copy" v-if="!copied"></i>
+                   <i class="fa-solid fa-check text-success" v-else></i>
+                </button>
+             </div>
+             <div class="share-footer" v-if="copied">
+                Link Copied!
+             </div>
+          </div>
+        </Transition>
+      </div>
     </div>
     
     <hr />
@@ -84,7 +122,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
   product: {
@@ -158,9 +196,59 @@ const updateTimer = () => {
   timeLeft.value = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 };
 
+// Share Logic
+const showShareMenu = ref(false);
+const copied = ref(false);
+
+const currentUrl = ref('');
+
+const toggleShare = () => {
+  showShareMenu.value = !showShareMenu.value;
+  if(showShareMenu.value) copied.value = false;
+};
+
+const closeShare = () => {
+  showShareMenu.value = false;
+};
+
+const facebookShare = computed(() => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl.value)}`);
+const twitterShare = computed(() => `https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl.value)}&text=${encodeURIComponent(props.product.name)}`);
+const whatsappShare = computed(() => `https://api.whatsapp.com/send?text=${encodeURIComponent(props.product.name + ' ' + currentUrl.value)}`);
+
+const copyLink = async () => {
+  try {
+    await navigator.clipboard.writeText(currentUrl.value);
+    copied.value = true;
+    setTimeout(() => {
+       copied.value = false;
+    }, 2000);
+  } catch (err) {
+    console.error('Failed to copy: ', err);
+  }
+};
+
+// Custom Directive for clicking outside
+const vOutsideClick = {
+  mounted(el, binding) {
+    el.clickOutsideEvent = (event) => {
+      if (!(el === event.target || el.contains(event.target))) {
+        binding.value();
+      }
+    };
+    document.body.addEventListener('click', el.clickOutsideEvent);
+  },
+  unmounted(el) {
+    document.body.removeEventListener('click', el.clickOutsideEvent);
+  },
+};
+
 onMounted(() => {
   updateTimer();
   timerInterval = setInterval(updateTimer, 1000);
+  // Set current URL on mount (client-side)
+  if (typeof window !== 'undefined') {
+    currentUrl.value = window.location.href;
+  }
 });
 
 onUnmounted(() => {
@@ -171,7 +259,6 @@ onUnmounted(() => {
 <style scoped>
 .product-info {
   flex: 1;
- 
 }
 
 .breadcrumb {
@@ -192,7 +279,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
+  /* Removed margin-bottom here as it's handled in wrapper now */
 }
 
 .stars {
@@ -383,5 +470,118 @@ hr {
 
 .sm-price {
   font-size: 13px;
+}
+
+/* Share System Styles */
+.share-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #eee;
+  background: white;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.share-btn:hover, .share-btn.active {
+  background: #f5f5f5;
+  color: var(--brand);
+  border-color: var(--brand);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.share-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 12px;
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  width: 250px;
+  z-index: 100;
+  border: 1px solid #f0f0f0;
+}
+
+.share-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 14px;
+  width: 12px;
+  height: 12px;
+  background: white;
+  transform: rotate(45deg);
+  border-top: 1px solid #f0f0f0;
+  border-left: 1px solid #f0f0f0;
+}
+
+.share-header {
+  font-size: 13px;
+  font-weight: 600;
+  color: #999;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.share-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.share-item {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #f8f9fa;
+  color: #333;
+  font-size: 18px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+
+.share-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.share-item.fb:hover { background: #e7f5ff; color: #1877f2; }
+.share-item.tw:hover { background: #eff3f4; color: #000; }
+.share-item.wa:hover { background: #dcf8c6; color: #25d366; }
+.share-item.cp:hover { background: #e9ecef; color: #495057; }
+
+.share-footer {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand);
+  margin-top: 8px;
+  background: #f9f9f9;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.fade-up-enter-active,
+.fade-up-leave-active {
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.fade-up-enter-from,
+.fade-up-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
 }
 </style>

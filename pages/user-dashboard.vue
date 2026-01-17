@@ -23,6 +23,9 @@
                     <button class="menu-item btn text-start border-0 fw-medium" :class="{ active: activeTab === 'returns' }" @click="activeTab = 'returns'">
                         <i class="fa-solid fa-rotate-left me-3"></i> Return Orders
                     </button>
+                    <button class="menu-item btn text-start border-0 fw-medium" @click="navigateTo('/track-order')">
+                        <i class="fa-solid fa-truck-fast me-3"></i> Track Order
+                    </button>
                     <button class="menu-item btn text-start border-0 fw-medium" :class="{ active: activeTab === 'account' }" @click="activeTab = 'account'">
                         <i class="fa-regular fa-user me-3"></i> Account Info
                     </button>
@@ -104,7 +107,15 @@
                             </thead>
                             <tbody>
                                 <tr v-for="order in orders.slice(0, 5)" :key="order.id">
-                                    <td class="fw-bold text-brand">#{{ order.id }}</td>
+                                    <td class="fw-bold text-brand">
+                                        <div class="d-flex align-items-center gap-2">
+                                            #{{ order.id }}
+                                            <button @click.stop="copyToClipboard(order.id)" class="btn btn-sm btn-light p-0 d-flex align-items-center justify-content-center rounded-circle border shadow-sm" style="width: 28px; height: 28px;" title="Copy Order ID">
+                                                <i class="fa-solid fa-check text-success" v-if="copiedOrderId === order.id"></i>
+                                                <i class="fa-regular fa-copy text-muted" v-else></i>
+                                            </button>
+                                        </div>
+                                    </td>
                                     <td>{{ order.items.length }} Items</td>
                                     <td>
                                         <span class="badge bg-warning-light text-warning-dark px-3 py-2 rounded-pill">Pending</span>
@@ -112,7 +123,9 @@
                                     <td>{{ order.paymentMethod === 'cod' ? 'Cash On Delivery' : 'Online' }}</td>
                                     <td class="fw-bold">৳{{ order.total }}</td>
                                     <td class="text-end">
-                                        <button class="btn btn-sm btn-light rounded-circle"><i class="fa-regular fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-light rounded-circle" @click="openOrderModal(order)" title="View Details">
+                                            <i class="fa-regular fa-eye"></i>
+                                        </button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -316,7 +329,15 @@
                             </thead>
                             <tbody>
                                 <tr v-for="order in orders" :key="order.id" class="cursor-pointer">
-                                    <td class="ps-3 fw-bold text-brand">#{{ order.id }}</td>
+                                    <td class="ps-3 fw-bold text-brand">
+                                        <div class="d-flex align-items-center gap-2">
+                                            #{{ order.id }}
+                                            <button @click.stop="copyToClipboard(order.id)" class="btn btn-sm btn-light p-0 d-flex align-items-center justify-content-center rounded-circle border shadow-sm" style="width: 28px; height: 28px;" title="Copy Order ID">
+                                                <i class="fa-solid fa-check text-success" v-if="copiedOrderId === order.id"></i>
+                                                <i class="fa-regular fa-copy text-muted" v-else></i>
+                                            </button>
+                                        </div>
+                                    </td>
                                     <td class="text-muted small">{{ formatDate(order.date) }}</td>
                                     <td>
                                         <div class="d-flex align-items-center">
@@ -330,7 +351,7 @@
                                         </span>
                                     </td>
                                     <td class="text-end pe-3">
-                                        <button class="btn btn-view-order btn-sm rounded-pill px-3">
+                                        <button class="btn btn-view-order btn-sm rounded-pill px-3" @click="openOrderModal(order)">
                                             View Details
                                         </button>
                                     </td>
@@ -389,6 +410,9 @@
                 <button class="menu-item btn text-start border-0 fw-medium" :class="{ active: activeTab === 'returns' }" @click="activeTab = 'returns'; isSidebarOpen = false">
                     <i class="fa-solid fa-rotate-left me-3"></i> Return Orders
                 </button>
+                <button class="menu-item btn text-start border-0 fw-medium" @click="navigateTo('/track-order')">
+                    <i class="fa-solid fa-truck-fast me-3"></i> Track Order
+                </button>
                 <button class="menu-item btn text-start border-0 fw-medium" :class="{ active: activeTab === 'account' }" @click="activeTab = 'account'; isSidebarOpen = false">
                     <i class="fa-regular fa-user me-3"></i> Account Info
                 </button>
@@ -419,6 +443,114 @@
         </div>
       </div>
     </Transition>
+   <!-- Order Details Modal -->
+   <Transition name="modal-fade">
+      <div v-if="showOrderModal" class="order-modal-overlay" @click.self="closeOrderModal">
+        <div class="order-modal-panel">
+           <!-- Header -->
+           <div class="modal-header-custom p-4 border-bottom d-flex align-items-center justify-content-between sticky-top bg-white rounded-top-4">
+              <div>
+                  <h5 class="fw-bold mb-1">Order Details</h5>
+                  <p class="text-muted small mb-0">Order ID: <span class="text-brand fw-bold">#{{ selectedOrder?.id }}</span></p>
+              </div>
+              <button class="btn-close-modal" @click="closeOrderModal">
+                  <i class="fa-solid fa-xmark"></i>
+              </button>
+           </div>
+
+           <!-- Body -->
+           <div class="modal-body-custom p-4">
+              <!-- Status Bar -->
+              <div class="d-flex align-items-center justify-content-between bg-light p-3 rounded-3 mb-4 flex-wrap gap-2">
+                  <div class="d-flex align-items-center gap-2">
+                      <span class="text-muted small fw-bold text-uppercase">Ordered Date:</span>
+                      <span class="fw-bold fs-7">{{ formatDate(selectedOrder?.date) }}</span>
+                  </div>
+                  <div v-if="selectedOrder?.status" class="status-pill" :class="selectedOrder.status.toLowerCase()">
+                      {{ selectedOrder.status }}
+                  </div>
+                  <span v-else class="status-pill pending">Pending</span>
+              </div>
+
+              <div class="row g-4">
+                  <!-- Order Items -->
+                  <div class="col-lg-8">
+                      <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                          <i class="fa-solid fa-box-open text-brand"></i> Order Items
+                      </h6>
+                      <div class="order-items-list border rounded-3 overflow-hidden">
+                          <div v-for="item in selectedOrder?.items" :key="item.cartItemId || item.id" class="p-3 border-bottom d-flex align-items-center gap-3">
+                              <div class="item-thumb rounded border">
+                                  <img :src="item.image" :alt="item.name" class="w-100 h-100 object-fit-cover">
+                              </div>
+                              <div class="flex-grow-1">
+                                  <h6 class="fw-bold mb-1 p-lg">{{ item.name }}</h6>
+                                  <div class="d-flex gap-2 text-muted small mb-1">
+                                      <span v-if="item.size">Size: {{ item.size }}</span>
+                                      <span v-if="item.color">Color: {{ typeof item.color === 'object' ? item.color.name : item.color }}</span>
+                                  </div>
+                                  <div class="fw-bold text-brand">
+                                     ৳{{ item.price }} × {{ item.quantity }}
+                                  </div>
+                              </div>
+                              <div class="text-end fw-bold">
+                                  ৳{{ (parseFloat(item.price.toString().replace(/[^\d.]/g, '')) * item.quantity).toFixed(2) }}
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+
+                  <!-- Sidabar Info -->
+                  <div class="col-lg-4">
+                      <!-- Shipping Info -->
+                      <div class="info-card border rounded-3 p-3 mb-3">
+                          <h6 class="fw-bold mb-3 d-flex align-items-center gap-2 small text-muted text-uppercase">
+                              <i class="fa-solid fa-truck-fast"></i> Shipping Details
+                          </h6>
+                          <div v-if="selectedOrder?.shipping">
+                              <p class="fw-bold mb-1">{{ selectedOrder.shipping.name }}</p>
+                              <p class="text-muted small mb-1">{{ selectedOrder.shipping.address }}</p>
+                              <p class="text-muted small mb-1">
+                                  {{ selectedOrder.shipping.location }}
+                              </p>
+                              <p class="text-muted small mb-0 mt-2">
+                                  <i class="fa-solid fa-phone me-1"></i> {{ selectedOrder.shipping.phone }}
+                              </p>
+                          </div>
+                          <div v-else class="text-muted small italic">
+                              Shipping info not available
+                          </div>
+                      </div>
+
+                      <!-- Payment Info -->
+                      <div class="info-card border rounded-3 p-3 bg-light">
+                          <h6 class="fw-bold mb-3 d-flex align-items-center gap-2 small text-muted text-uppercase">
+                              <i class="fa-solid fa-file-invoice-dollar"></i> Payment Summary
+                          </h6>
+                          <div class="d-flex justify-content-between mb-2 small">
+                              <span class="text-muted">Payment Method</span>
+                              <span class="fw-bold text-uppercase">{{ selectedOrder?.paymentMethod === 'cod' ? 'Cash On Delivery' : selectedOrder?.paymentMethod }}</span>
+                          </div>
+                          <div class="d-flex justify-content-between mb-2 small">
+                              <span class="text-muted">Subtotal</span>
+                              <span class="fw-bold">৳{{ selectedOrder?.items?.reduce((acc, item) => acc + (parseFloat(item.price.toString().replace(/[^\d.]/g, '')) * item.quantity), 0).toFixed(2) }}</span>
+                          </div>
+                           <div class="d-flex justify-content-between mb-3 small">
+                              <span class="text-muted">Shipping</span>
+                              <span class="fw-bold">৳{{ (selectedOrder?.total - selectedOrder?.items?.reduce((acc, item) => acc + (parseFloat(item.price.toString().replace(/[^\d.]/g, '')) * item.quantity), 0)).toFixed(2) }}</span>
+                          </div>
+                          <div class="border-top pt-2 d-flex justify-content-between align-items-center">
+                              <span class="fw-bold">Total Amount</span>
+                              <span class="fw-bold text-brand fs-5">৳{{ selectedOrder?.total }}</span>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+           </div>
+        </div>
+      </div>
+   </Transition>
+
   </div>
 </template>
 
@@ -426,6 +558,24 @@
 import { ref, onMounted, computed, watch } from 'vue'
 const { user, orders, logout, updateProfile } = useUser()
 const router = useRouter()
+
+// Order Details Modal State
+const showOrderModal = ref(false)
+const selectedOrder = ref(null)
+
+const openOrderModal = (order) => {
+    selectedOrder.value = order
+    showOrderModal.value = true
+    document.body.style.overflow = 'hidden' // Prevent background scrolling
+}
+
+const closeOrderModal = () => {
+    showOrderModal.value = false
+    setTimeout(() => {
+        selectedOrder.value = null
+    }, 300)
+    document.body.style.overflow = ''
+}
 
 // Country Selector State
 const showCountryList = ref(false)
@@ -508,6 +658,20 @@ const profileForm = ref({
     upazila: user.value?.upazila || '',
     avatar: user.value?.avatar || 'https://thumbs.dreamstime.com/b/default-avatar-profile-icon-vector-social-media-user-image-182145777.jpg'
 })
+
+const copiedOrderId = ref(null)
+
+const copyToClipboard = async (text) => {
+    try {
+        await navigator.clipboard.writeText(text)
+        copiedOrderId.value = text
+        setTimeout(() => {
+            copiedOrderId.value = null
+        }, 2000)
+    } catch (err) {
+        console.error('Failed to copy code', err)
+    }
+}
 
 const passwordForm = ref({
     currentPassword: user.value?.tempPassword || '',
@@ -831,5 +995,116 @@ const formatDate = (isoString) => {
 .avatar-edit-badge:hover {
     transform: scale(1.1);
     background-color: #5a1d1e !important;
+}
+</style>
+
+<style scoped>
+/* Order Modal Styles */
+.order-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.order-modal-panel {
+    background: #fff;
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.3s ease-out;
+}
+
+.modal-header-custom {
+    z-index: 10;
+}
+
+.modal-body-custom {
+    overflow-y: auto;
+}
+
+.btn-close-modal {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #eee;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 16px;
+    color: #555;
+}
+
+.btn-close-modal:hover {
+    background: #e9ecef;
+    color: #000;
+    transform: rotate(90deg);
+}
+
+.status-pill {
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.status-pill.pending { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
+.status-pill.processing { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; }
+.status-pill.completed { background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; }
+.status-pill.cancelled { background: #fef2f2; color: #b91c1c; border: 1px solid #fee2e2; }
+
+.item-thumb {
+    width: 70px;
+    height: 70px;
+    flex-shrink: 0;
+    background: #fff;
+    padding: 2px;
+}
+
+.fs-7 { font-size: 13px; }
+
+/* Transitions */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .order-modal-panel {
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+    }
+    
+    .modal-body-custom {
+        padding: 15px !important;
+    }
 }
 </style>

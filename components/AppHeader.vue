@@ -38,6 +38,10 @@
         <!-- header right -->
         <div class="d-flex align-items-center gap-4">
           <div class="d-none d-md-flex align-items-center gap-5 header-right">
+            <nuxt-link to="/track-order" class="position-relative d-flex flex-column align-items-center text-white text-decoration-none">
+              <i class="fa-solid fa-truck-fast mb-1"></i>
+              <span>Track Order</span>
+            </nuxt-link>
             <nuxt-link to="/wishlist" class="position-relative d-flex flex-column align-items-center text-white text-decoration-none">
               <i class="fa-solid fa-heart mb-1"></i>
               <span>Wishlist</span>

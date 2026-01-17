@@ -135,10 +135,72 @@
                 </div>
                 <div class="form-group mb-4">
                   <label class="form-label fw-bold mb-2">Phone Number <span class="text-danger">*</span></label>
-                  <input type="text" v-model="phoneNumber" class="form-control-custom" placeholder="01706720499">
+                  <div class="phone-input-group d-flex align-items-center form-control-custom position-relative">
+                       <!-- Custom Selector -->
+                       <div class="country-selector-wrapper position-relative" v-outside-click="() => showCountryList = false">
+                          <div 
+                            class="phone-country-trigger d-flex align-items-center gap-2 px-3 h-100 border-end" 
+                            @click="showCountryList = !showCountryList"
+                          >
+                             <img :src="selectedCountry.flag" alt="Flag" class="phone-flag-img shadow-sm">
+                             <span class="code-text fw-bold">{{ selectedCountry.code }}</span>
+                             <i class="fa-solid fa-angle-down x-small text-muted"></i>
+                          </div>
+
+                          <!-- Dropdown Menu -->
+                          <Transition name="fade-down">
+                            <div v-if="showCountryList" class="phone-country-dropdown shadow-lg border-0 rounded-4 mt-2">
+                               <!-- Search Filter -->
+                               <div class="px-3 border-bottom sticky-top bg-white rounded-top-4">
+                                  <input 
+                                    type="text" 
+                                    v-model="countrySearch" 
+                                    class="form-control border-0 bg-light py-3 p-lg" 
+                                    placeholder="Search country..."
+                                    @click.stop
+                                  >
+                               </div>
+                               <div class="phone-country-list-scroll">
+                                 <div v-if="isLoadingCountries" class="text-center py-4">
+                                     <i class="fa-solid fa-spinner fa-spin text-brand"></i>
+                                     <p class="small text-muted mt-2">Loading countries...</p>
+                                 </div>
+                                 <template v-else>
+                                     <div 
+                                       v-for="c in filteredCountries" 
+                                       :key="c.code + c.name" 
+                                       class="phone-country-option d-flex align-items-center gap-3 px-3 py-2"
+                                       @click="selectCountry(c)"
+                                     >
+                                        <img :src="c.flag" alt="Flag" class="phone-flag-img shadow-sm">
+                                        <div class="d-flex flex-column">
+                                          <span class="phone-country-name text-start">{{ c.name }}</span>
+                                          <span class="phone-country-code text-muted small text-start">{{ c.code }}</span>
+                                        </div>
+                                     </div>
+                                     <div v-if="filteredCountries.length === 0" class="text-center py-3 text-muted small">
+                                        No country found
+                                     </div>
+                                 </template>
+                               </div>
+                            </div>
+                          </Transition>
+                       </div>
+
+                       <!-- Phone Number Input -->
+                       <input 
+                        type="tel" 
+                        v-model="localPhone" 
+                        @input="updatePhoneNumber"
+                        class="form-control-minimal flex-grow-1 px-3 border-0" 
+                        placeholder="017XXX XXXXXX" 
+                       >
+                    </div>
                 </div>
                 <div class="form-group mb-4">
-                  <label class="form-label fw-bold mb-2">Email Address <span class="text-muted fs-7">(Optional)</span></label>
+                  <label class="form-label fw-bold mb-2">Email Address 
+                    <!-- <span class="text-muted fs-7">(Optional)</span> -->
+                  </label>
                   <input type="email" v-model="email" class="form-control-custom" placeholder="example@mail.com">
                 </div>
                 <div class="form-group mb-4">
@@ -684,11 +746,110 @@ const isMapModalOpen = ref(false)
 const tempLocation = ref(null)
 
 // Shipping Form Fields
+// Shipping Form Fields
 const fullName = ref(user.value?.name || '')
 const phoneNumber = ref(user.value?.phone || '')
 const email = ref(user.value?.email || '')
 const detailedAddress = ref(user.value?.address || '')
 const additionalInstructions = ref('')
+
+// Phone Input Logic
+const showCountryList = ref(false)
+const countrySearch = ref('')
+const isLoadingCountries = ref(true)
+const countries = ref([
+    { name: 'Bangladesh', code: '+880', flag: 'https://flagcdn.com/w40/bd.png', iso: 'BD' }
+])
+const selectedCountry = ref(countries.value[0])
+const localPhone = ref('')
+
+const filteredCountries = computed(() => {
+    if (!countrySearch.value) return countries.value
+    return countries.value.filter(c => 
+        c.name.toLowerCase().includes(countrySearch.value.toLowerCase()) || 
+        c.code.includes(countrySearch.value)
+    )
+})
+
+const fetchCountries = async () => {
+    try {
+        const response = await fetch('https://restcountries.com/v3.1/all?fields=name,flags,idd,cca2')
+        const data = await response.json()
+        
+        const formatted = data
+            .filter(c => c.idd?.root)
+            .map(c => ({
+                name: c.name.common,
+                code: c.idd.root + (c.idd.suffixes?.length === 1 ? c.idd.suffixes[0] : ''),
+                flag: c.flags.png || `https://flagcdn.com/w40/${c.cca2.toLowerCase()}.png`,
+                iso: c.cca2
+            }))
+            .sort((a, b) => a.name.localeCompare(b.name))
+
+        const bdIndex = formatted.findIndex(c => c.iso === 'BD')
+        if (bdIndex > -1) {
+            const bd = formatted.splice(bdIndex, 1)[0]
+            countries.value = [bd, ...formatted]
+        } else {
+            countries.value = formatted
+        }
+        
+        if(!phoneNumber.value) {
+           selectedCountry.value = countries.value[0]
+        }
+    } catch (error) {
+        console.error('Error fetching countries:', error)
+    } finally {
+        isLoadingCountries.value = false
+    }
+}
+
+const selectCountry = (country) => {
+    selectedCountry.value = country
+    showCountryList.value = false
+    countrySearch.value = ''
+    updatePhoneNumber()
+}
+
+const updatePhoneNumber = () => {
+   if(!localPhone.value) {
+        phoneNumber.value = '' 
+   } else {
+        phoneNumber.value = selectedCountry.value.code + localPhone.value
+   }
+}
+
+onMounted(async () => {
+    await fetchCountries()
+    if(phoneNumber.value) {
+        // Try to match country code
+        const country = countries.value.find(c => phoneNumber.value.startsWith(c.code))
+        if(country) {
+            selectedCountry.value = country
+            localPhone.value = phoneNumber.value.replace(country.code, '')
+        } else {
+             localPhone.value = phoneNumber.value
+        }
+    }
+})
+
+watch(localPhone, () => {
+    updatePhoneNumber()
+})
+
+const vOutsideClick = {
+  mounted(el, binding) {
+    el.clickOutsideEvent = (event) => {
+      if (!(el === event.target || el.contains(event.target))) {
+        binding.value();
+      }
+    };
+    document.body.addEventListener('click', el.clickOutsideEvent);
+  },
+  unmounted(el) {
+    document.body.removeEventListener('click', el.clickOutsideEvent);
+  },
+};
 
 // Payment Selection
 const selectedPaymentMethod = ref('cod')
