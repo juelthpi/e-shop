@@ -53,7 +53,7 @@
             <!-- Header -->
             <div class="p-3 border-bottom d-flex align-items-center gap-3 bg-white">
               <label class="checkbox-container-custom mb-0">
-                <input type="checkbox" checked disabled>
+                <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll">
                 <span class="checkmark"></span>
                 <span class="label-text fw-medium">Select All</span>
               </label>
@@ -63,7 +63,7 @@
                 <div>
                   <div class="vendor-header p-3 d-flex align-items-center gap-3">
                       <label class="checkbox-container-custom mb-0">
-                        <input type="checkbox" checked disabled>
+                        <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll">
                         <span class="checkmark"></span>
                       </label>
                       <i class="fa-solid fa-store text-brand"></i>
@@ -77,17 +77,19 @@
                         <div style="flex: 1" class="text-end pe-4">Actions</div>
                      </div>
                      
-                     <div v-for="item in cart" :key="item.cartItemId" class="product-row d-flex align-items-center px-4 py-4 border-top">
+                     <div v-for="item in cart" :key="item.cartItemId" class="product-row d-flex align-items-center px-4 py-4 border-top" :class="{ 'opacity-50': !selectedItems.includes(item.cartItemId) }">
                         <div style="flex: 2" class="d-flex align-items-center gap-3">
                            <label class="checkbox-container-custom mb-0">
-                              <input type="checkbox" checked disabled>
+                              <input type="checkbox" :value="item.cartItemId" v-model="selectedItems">
                               <span class="checkmark"></span>
                            </label>
                            <div class="product-img-box rounded overflow-hidden">
                               <img :src="item.image" :alt="item.name">
                            </div>
                            <div class="flex-grow-1">
-                              <p class="product-name-checkout mb-2 fw-medium">{{ item.name }}</p>
+                              <NuxtLink to="/product-details" class="text-decoration-none text-dark">
+                                 <p class="product-name-checkout mb-2 fw-medium">{{ item.name }}</p>
+                              </NuxtLink>
                               <div class="d-flex gap-2 flex-wrap">
                                 <div v-if="item.color" class="product-meta-badge">
                                   <i class="fa-solid fa-palette me-1"></i>Color: {{ typeof item.color === 'object' ? item.color.name : item.color }}
@@ -193,7 +195,7 @@
                         v-model="localPhone" 
                         @input="updatePhoneNumber"
                         class="form-control-minimal flex-grow-1 px-3 border-0" 
-                        placeholder="017XXX XXXXXX" 
+                        placeholder="Phone number" 
                        >
                     </div>
                 </div>
@@ -497,7 +499,7 @@
             <div class="summary-list">
               <div class="summary-item d-flex justify-content-between mb-3 text-muted">
                 <span>Product Price</span>
-                <span class="text-dark fw-bold">৳{{ subtotal.toFixed(2) }}</span>
+                <span class="text-dark fw-bold">৳{{ selectedSubtotal.toFixed(2) }}</span>
               </div>
               <div class="summary-item d-flex justify-content-between mb-3 text-muted">
                 <div class="d-flex flex-column">
@@ -603,18 +605,20 @@
                 <!-- Product Preview Table -->
                 <div class="mt-5">
                    <h6 class="text-muted small text-uppercase fw-bold mb-3 letter-spacing-1">Items in your order</h6>
-                   <div class="review-product-table border rounded-4 overflow-hidden">
-                      <div v-for="item in cart" :key="item.cartItemId" class="review-product-row p-3 d-flex align-items-center gap-3 border-bottom last-border-0">
-                         <img :src="item.image" class="review-item-img" alt="">
-                         <div class="flex-grow-1">
-                            <h6 class="mb-0 fw-bold small">{{ item.name }}</h6>
-                            <span class="text-muted fs-8">Qty: {{ item.quantity }} × ৳{{ parseFloat(item.price.replace(/[^\d.]/g, '')).toFixed(2) }}</span>
-                         </div>
-                         <div class="text-end fw-bold">
-                            ৳{{ (parseFloat(item.price.replace(/[^\d.]/g, '')) * item.quantity).toFixed(2) }}
-                         </div>
-                      </div>
-                   </div>
+                    <div class="review-product-table border rounded-4 overflow-hidden">
+                       <div v-for="item in cart.filter(i => selectedItems.includes(i.cartItemId))" :key="item.cartItemId" class="review-product-row p-3 d-flex align-items-center gap-3 border-bottom last-border-0">
+                          <img :src="item.image" class="review-item-img" alt="">
+                          <div class="flex-grow-1">
+                             <NuxtLink to="/product-details" class="text-decoration-none text-dark">
+                                <h6 class="mb-0 fw-bold small">{{ item.name }}</h6>
+                             </NuxtLink>
+                             <span class="text-muted fs-8">Qty: {{ item.quantity }} × ৳{{ parseFloat(item.price.toString().replace(/[^\d.]/g, '')).toFixed(2) }}</span>
+                          </div>
+                          <div class="text-end fw-bold">
+                             ৳{{ (parseFloat(item.price.toString().replace(/[^\d.]/g, '')) * item.quantity).toFixed(2) }}
+                          </div>
+                       </div>
+                    </div>
                 </div>
               </div>
             </div>
@@ -626,7 +630,7 @@
                  <div class="summary-list mb-4">
                     <div class="summary-item d-flex justify-content-between mb-2">
                        <span class="text-muted">Subtotal</span>
-                       <span class="fw-bold">৳{{ subtotal.toFixed(2) }}</span>
+                       <span class="fw-bold">৳{{ selectedSubtotal.toFixed(2) }}</span>
                     </div>
                     <div class="summary-item d-flex justify-content-between mb-2">
                        <span class="text-muted">Shipping ({{ deliveryType === 'express' ? 'Express' : 'Regular' }})</span>
@@ -719,8 +723,35 @@
 </template>
 
 <script setup>
-const { cart, subtotal } = useCart()
+const { cart, subtotal: cartSubtotal } = useCart()
 const { user, loginOrUpdateUser, addOrder } = useUser()
+
+const selectedItems = ref([])
+
+onMounted(() => {
+    selectedItems.value = cart.value.map(item => item.cartItemId)
+})
+
+const isAllSelected = computed(() => {
+    return cart.value.length > 0 && selectedItems.value.length === cart.value.length
+})
+
+const toggleSelectAll = () => {
+    if (isAllSelected.value) {
+        selectedItems.value = []
+    } else {
+        selectedItems.value = cart.value.map(item => item.cartItemId)
+    }
+}
+
+const selectedSubtotal = computed(() => {
+    return cart.value
+        .filter(item => selectedItems.value.includes(item.cartItemId))
+        .reduce((total, item) => {
+            const price = parseFloat(item.price.toString().replace(/[^\d.]/g, ''))
+            return total + (price * item.quantity)
+        }, 0)
+})
 
 const breadcrumbItems = [
   { name: 'Home', link: '/' },
@@ -831,6 +862,10 @@ onMounted(async () => {
              localPhone.value = phoneNumber.value
         }
     }
+    // Ensure selectedItems is populated even if cart is initially empty but items added later
+    if (selectedItems.value.length === 0 && cart.value.length > 0) {
+        selectedItems.value = cart.value.map(item => item.cartItemId)
+    }
 })
 
 watch(localPhone, () => {
@@ -893,17 +928,19 @@ const validationModalMessage = ref('Please fill up all required shipping informa
 const createAccount = ref(true)
 
 const isFormValid = computed(() => {
-  return fullName.value.trim() && 
-         phoneNumber.value.trim() && 
-         detailedAddress.value.trim() && 
-         selectedDivision.value && 
-         selectedDistrict.value && 
-         selectedUpazila.value &&
-         selectedDeliveryZone.value
+  const hasName = !!(fullName.value && fullName.value.toString().trim())
+  const hasPhone = !!(phoneNumber.value && phoneNumber.value.toString().trim())
+  const hasAddress = !!(detailedAddress.value && detailedAddress.value.toString().trim())
+  const hasDivision = !!selectedDivision.value
+  const hasDistrict = !!selectedDistrict.value
+  const hasUpazila = !!selectedUpazila.value
+  const hasZone = !!selectedDeliveryZone.value
+  
+  return hasName && hasPhone && hasAddress && hasDivision && hasDistrict && hasUpazila && hasZone
 })
 
 const shippingCharge = computed(() => {
-  if (cart.value.length === 0) return 0
+  if (selectedItems.value.length === 0) return 0
   let charge = selectedDeliveryZone.value ? selectedDeliveryZone.value.price : 0
   if (deliveryType.value === 'express') {
     charge += 50
@@ -912,7 +949,7 @@ const shippingCharge = computed(() => {
 })
 
 const totalPayable = computed(() => {
-  return subtotal.value + shippingCharge.value
+  return selectedSubtotal.value + shippingCharge.value
 })
 
 const onlineProviders = [
@@ -932,19 +969,30 @@ const handleModalClose = () => {
 }
 
 const handlePlaceOrder = () => {
-    if (cart.value.length === 0) {
-        validationModalTitle.value = 'Empty Cart'
-        validationModalMessage.value = 'Your cart is empty. Please add some products to checkout.'
+    if (!selectedItems.value || selectedItems.value.length === 0) {
+        validationModalTitle.value = 'No Items Selected'
+        validationModalMessage.value = 'Please select at least one item from your cart to proceed.'
         showValidationModal.value = true
         return
     }
 
     if (!isFormValid.value) {
+        // Build specific error message
+        const missing = []
+        if (!fullName.value?.trim()) missing.push('Full Name')
+        if (!phoneNumber.value?.trim()) missing.push('Phone Number')
+        if (!detailedAddress.value?.trim()) missing.push('Detailed Address')
+        if (!selectedDivision.value) missing.push('Division')
+        if (!selectedDistrict.value) missing.push('District')
+        if (!selectedUpazila.value) missing.push('Upazila')
+        if (!selectedDeliveryZone.value) missing.push('Delivery Zone')
+
         validationModalTitle.value = 'Incomplete Information'
-        validationModalMessage.value = 'Please fill up all required shipping information to proceed with your order.'
+        validationModalMessage.value = `Please provide the following missing information: ${missing.join(', ')}.`
         showValidationModal.value = true
         return
     }
+
     isReviewing.value = true
     window.scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -979,7 +1027,7 @@ const confirmFinalOrder = () => {
     addOrder({
         id: newOrderId,
         date: new Date().toISOString(),
-        items: [...cart.value],
+        items: cart.value.filter(item => selectedItems.value.includes(item.cartItemId)),
         total: totalPayable.value,
         status: 'Pending',
         paymentMethod: selectedPaymentMethod.value,
@@ -1014,7 +1062,21 @@ const autoFillFromProfile = () => {
     selectedDivision.value = user.value.division || ''
     selectedDistrict.value = user.value.district || ''
     selectedUpazila.value = user.value.upazila || ''
-    locationSelected.value = !!user.value.address // assume if they have address, it's valid
+    
+    // Sync localPhone for the phone input component
+    if (phoneNumber.value && countries.value.length > 0) {
+        const country = countries.value.find(c => phoneNumber.value.startsWith(c.code))
+        if(country) {
+            selectedCountry.value = country
+            localPhone.value = phoneNumber.value.replace(country.code, '')
+        } else {
+            localPhone.value = phoneNumber.value
+        }
+    } else {
+        localPhone.value = phoneNumber.value
+    }
+
+    locationSelected.value = !!detailedAddress.value
 }
 
 const goBackToEdit = () => {

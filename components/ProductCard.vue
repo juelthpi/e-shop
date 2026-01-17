@@ -41,16 +41,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Success Animation Popup -->
-    <Transition name="pop">
-      <div v-if="showSuccessPopup" class="success-toast">
-        <div class="d-flex align-items-center gap-2">
-          <i class="fa-solid fa-circle-check text-success fa-lg"></i>
-          <span>Successfully added to cart!</span>
-        </div>
-      </div>
-    </Transition>
   </div>
 </template>
 
@@ -69,9 +59,8 @@ const props = defineProps({
 
 const swiperInstance = ref(null);
 const { toggleWishlist: toggleGlobalWishlist, isInWishlist } = useWishlist();
-const { addToCart } = useCart();
+const { openQuickView } = useQuickView();
 const isMounted = ref(false);
-const showSuccessPopup = ref(false);
 
 const isWishlist = computed(() => isInWishlist(props.product.id));
 
@@ -80,15 +69,7 @@ const toggleWishlist = () => {
 };
 
 const handleAddToCart = () => {
-  addToCart(props.product, null, null, 1);
-  
-  // Show success popup
-  showSuccessPopup.value = true;
-  
-  // Hide popup after a while, NO navigation
-  setTimeout(() => {
-    showSuccessPopup.value = false;
-  }, 2000);
+  openQuickView(props.product);
 };
 
 const onSwiper = (swiper) => {
@@ -111,28 +92,5 @@ onMounted(() => {
 
 
 <style scoped>
-/* Success Toast Styles */
-.success-toast {
-  position: fixed;
-  top: 100px;
-  right: 20px;
-  background: white;
-  padding: 15px 25px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  border-left: 5px solid #28a745;
-  z-index: 9999;
-}
-
-.pop-enter-active, .pop-leave-active {
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.pop-enter-from {
-  transform: translateX(100px) scale(0.8);
-  opacity: 0;
-}
-.pop-leave-to {
-  transform: translateY(-20px) scale(0.9);
-  opacity: 0;
-}
+/* No extra styles needed */
 </style>

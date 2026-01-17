@@ -111,7 +111,7 @@
                         type="tel" 
                         v-model="form.phone" 
                         class="form-control-minimal flex-grow-1 px-3 border-0" 
-                        placeholder="017XXX XXXXXX" 
+                        placeholder="Phone number" 
                         :required="signupMethod === 'phone'"
                        >
                     </div>

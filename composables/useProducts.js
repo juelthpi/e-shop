@@ -8,14 +8,20 @@ export const useProducts = () => {
         const randomPrefix = Math.floor(Math.random() * 10000);
         return Array.from({ length: count }, (_, i) => ({
             id: `prod-${randomPrefix}-${i}`,
-            name: ['Women Fashion', 'Trendy Shoes', 'Baby Accessories', 'Man Watch'][Math.floor(Math.random() * 4)],
+            name: ['Women Fashion', 'Trendy Shoes', 'Baby Accessories', 'Man Watch', 'Premium Sunglasses', 'Smart Watch Pro'][Math.floor(Math.random() * 6)],
             image: getRandomImage(),
             images: [getRandomImage(), getRandomImage(), getRandomImage()],
             price: Math.floor(Math.random() * 1000) + 100,
             oldPrice: Math.floor(Math.random() * 200) + 1100,
             rating: 5,
             reviews: '1.2K',
-            discount: '15% OFF'
+            discount: '15% OFF',
+            colors: [
+                { id: 'red', name: 'Red', code: '#ff0000', images: [getRandomImage()] },
+                { id: 'blue', name: 'Blue', code: '#0000ff', images: [getRandomImage()] },
+                { id: 'black', name: 'Black', code: '#000000', images: [getRandomImage()] }
+            ],
+            sizes: ['S', 'M', 'L', 'XL']
         }));
     };
 

@@ -4,6 +4,7 @@
     <OffcanvasMenu />
     <AppHeader />
     <CartDrawer />
+    <QuickViewModal />
     <slot />
     <AppFooter />
   </div>

@@ -222,7 +222,7 @@
                                     type="tel" 
                                     v-model="profileForm.phone" 
                                     class="form-control-minimal flex-grow-1 px-3 border-0 py-2" 
-                                    placeholder="017XXX XXXXXX"
+                                    placeholder="Phone number"
                                 >
                             </div>
                         </div>

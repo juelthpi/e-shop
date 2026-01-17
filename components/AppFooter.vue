@@ -14,12 +14,12 @@
           <div class="footer-widget">
             <h5 class="mb-4">Our Policies</h5>
             <ul class="footer-item-nav d-flex flex-column gap-2">
-              <li><nuxt-link to="#">Return & Refund Policy</nuxt-link></li>
-              <li><nuxt-link to="#">Exchange Policy</nuxt-link></li>
-              <li><nuxt-link to="#">Shipping & Delivery Policy</nuxt-link></li>
-              <li><nuxt-link to="#">Cancellation Policy</nuxt-link></li>
-              <li><nuxt-link to="#">Privacy Policy</nuxt-link></li>
-              <li><nuxt-link to="#">Terms & Conditions</nuxt-link></li>
+              <li><nuxt-link to="/policy/return-refund-policy">Return & Refund Policy</nuxt-link></li>
+              <li><nuxt-link to="/policy/exchange-policy">Exchange Policy</nuxt-link></li>
+              <li><nuxt-link to="/policy/shipping-delivery-policy">Shipping & Delivery Policy</nuxt-link></li>
+              <li><nuxt-link to="/policy/cancellation-policy">Cancellation Policy</nuxt-link></li>
+              <li><nuxt-link to="/policy/privacy-policy">Privacy Policy</nuxt-link></li>
+              <li><nuxt-link to="/policy/terms-condition">Terms & Conditions</nuxt-link></li>
             </ul>
           </div>
         </div>
@@ -27,11 +27,11 @@
           <div class="footer-widget">
             <h5 class="mb-4">Our Seller</h5>
             <ul class="footer-item-nav d-flex flex-column gap-2">
-              <li><nuxt-link to="#">Become A Seller </nuxt-link></li>
-              <li><nuxt-link to="#"> Seller Policy</nuxt-link></li>
-              <li><nuxt-link to="#"> Product Policy</nuxt-link></li>
-              <li><nuxt-link to="#"> Delivery Policy</nuxt-link></li>
-              <li><nuxt-link to="#"> Return Policy </nuxt-link></li>
+              <li><nuxt-link to="/seller-registration">Become A Seller </nuxt-link></li>
+              <li><nuxt-link to="/policy/seller-policy"> Seller Policy</nuxt-link></li>
+              <li><nuxt-link to="/policy/product-policy"> Product Policy</nuxt-link></li>
+              <li><nuxt-link to="/policy/delivery-policy"> Delivery Policy</nuxt-link></li>
+              <li><nuxt-link to="/policy/return-policy"> Return Policy </nuxt-link></li>
             </ul>
           </div>
         </div>

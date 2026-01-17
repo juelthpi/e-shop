@@ -26,12 +26,14 @@
 
           <div v-else class="cart-items d-flex flex-column gap-4">
             <div v-for="item in cart" :key="item.cartItemId" class="cart-item d-flex gap-3">
-              <div class="item-img rounded-3 overflow-hidden border bg-light d-flex align-items-center justify-content-center">
+              <NuxtLink to="/product-details" class="item-img rounded-3 overflow-hidden border bg-light d-flex align-items-center justify-content-center text-decoration-none" @click="toggleCartDrawer">
                 <img v-if="item.image" :src="item.image" :alt="item.name" class="w-100 h-100 object-fit-cover">
                 <i v-else class="fa-solid fa-image text-muted opacity-50"></i>
-              </div>
+              </NuxtLink>
               <div class="item-details flex-grow-1">
-                <p class="mb-1 pe-4 position-relative fw-medium text-black">{{ item.name }}</p>
+                <NuxtLink to="/product-details" class="text-decoration-none" @click="toggleCartDrawer">
+                  <p class="mb-1 pe-4 position-relative fw-medium text-black">{{ item.name }}</p>
+                </NuxtLink>
                 <p class="text-muted small mb-2">{{ item.color?.name || 'Default' }} | {{ item.size || 'N/A' }}</p>
                 <p class="fw-regular mb-3 text-black">${{ (parseFloat(item.price.toString().replace(/[^\d.]/g, '')) * item.quantity).toFixed(2) }}</p>
                 

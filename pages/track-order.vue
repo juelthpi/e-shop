@@ -103,6 +103,26 @@
                            </div>
                         </div>
                       </div>
+                      
+                      <!-- Courier Info -->
+                      <div class="col-md-12">
+                        <div class="p-3 bg-white border rounded-3 d-flex align-items-center justify-content-between">
+                           <div class="d-flex align-items-center gap-3">
+                              <div class="courier-icon-box bg-brand-light text-brand rounded-3 p-3">
+                                 <i class="fa-solid fa-truck-ramp-box fs-4"></i>
+                              </div>
+                              <div>
+                                 <h6 class="fw-bold mb-1">Delivery Partner</h6>
+                                 <p class="mb-0 text-muted small">Your parcel is being handled by <span class="text-dark fw-bold">Pathao Courier Ltd.</span></p>
+                              </div>
+                           </div>
+                           <div class="text-end d-none d-sm-block">
+                              <span class="badge bg-light text-dark border px-3 py-2 rounded-pill small">
+                                 <i class="fa-solid fa-headset me-2"></i>Support: 09613-700700
+                              </span>
+                           </div>
+                        </div>
+                      </div>
                   </div>
 
                   <!-- Order Items (Collapsed/Preview) -->

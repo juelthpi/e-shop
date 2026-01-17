@@ -114,6 +114,7 @@
         <SimpleProductSlider 
           :items="similarProducts" 
           :config="similarProductConfig" 
+          @item-click="handleProductClick"
         />
       </div>
     </div>
@@ -129,8 +130,8 @@ const showSuccessPopup = ref(false);
 const isMounted = ref(false);
 
 const handleAddToCart = () => {
-  const color = productData.colors.find(c => c.id === selectedColorId.value);
-  addToCart(productData, color, selectedSize.value, quantity.value);
+  const color = productData.value.colors.find(c => c.id === selectedColorId.value);
+  addToCart(productData.value, color, selectedSize.value, quantity.value);
   
   // Show success popup
   showSuccessPopup.value = true;
@@ -140,9 +141,34 @@ const handleAddToCart = () => {
 };
 
 const handleBuyNow = () => {
-  const color = productData.colors.find(c => c.id === selectedColorId.value);
-  addToCart(productData, color, selectedSize.value, quantity.value);
+  const color = productData.value.colors.find(c => c.id === selectedColorId.value);
+  addToCart(productData.value, color, selectedSize.value, quantity.value);
   navigateTo('/checkout');
+};
+
+const handleProductClick = (item) => {
+  // Sync selected item with product details view
+  productData.value = {
+    ...item,
+    ratingCount: item.reviews || '0',
+    features: [
+      'High-quality premium built design',
+      'Advanced technology integration',
+      'Ergonomic and comfortable for long use',
+      'Long-lasting durability and reliability',
+      'Optimized performance for daily tasks'
+    ],
+    discountPercentage: parseInt(item.discount?.replace('%', '')) || 20,
+    offerEndTime: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString()
+  };
+  
+  // Reset selections
+  selectedColorId.value = productData.value.colors?.[0]?.id || 'black';
+  selectedSize.value = productData.value.sizes?.[0] || 'Medium';
+  quantity.value = 1;
+  
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 const breadcrumbItems = [
@@ -157,6 +183,8 @@ onMounted(() => {
   }, 800);
 });
 
+const { generateProducts } = useProducts();
+
 const sellerInfo = ref({
   name: 'Tech World US',
   isVerified: true,
@@ -164,8 +192,8 @@ const sellerInfo = ref({
   logo: 'https://placehold.co/50x50'
 });
 
-const productData = {
-
+const productData = ref({
+  id: 'sony-wh-1000xm5',
   name: 'Sony WH-1000XM5 Wireless Industry Leading Noise Canceling Headphones with Auto NC Optimizer',
   price: '398.00',
   ratingCount: '12,453',
@@ -173,7 +201,6 @@ const productData = {
     'Industry-leading Noise Cancellation optimized to you',
     'Magnificent Sound, engineered to perfection with the new Integrated Processor V1',
     'Crystal clear hands-free calling with 4 beamforming microphones',
-    'Up to 30-hour battery life with quick charging (3 min charge for 3 hours of playback)',
     'Up to 30-hour battery life with quick charging (3 min charge for 3 hours of playback)',
     'Ultra-comfortable, lightweight design with soft fit leather'
   ],
@@ -186,7 +213,7 @@ const productData = {
     'XX-Large'
   ],
   discountPercentage: 25,
-  offerEndTime: new Date(new Date().getTime() + 12 * 60 * 60 * 1000).toISOString(), // 12 hours from now
+  offerEndTime: new Date(new Date().getTime() + 12 * 60 * 60 * 1000).toISOString(),
   colors: [
     {
       id: 'black',
@@ -198,7 +225,7 @@ const productData = {
         'https://images.unsplash.com/photo-1583394838336-acd977736f90?q=80&w=1500&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1484704849700-f032a568e944?q=80&w=1500&auto=format&fit=crop'
       ],
-      video: 'https://www.w3schools.com/html/mov_bbb.mp4' // Added sample video
+      video: 'https://www.w3schools.com/html/mov_bbb.mp4'
     },
     {
       id: 'silver',
@@ -210,7 +237,7 @@ const productData = {
         'https://images.unsplash.com/photo-1545127398-14699f92334b?q=80&w=1500&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1491927570842-0261e477d937?q=80&w=1500&auto=format&fit=crop'
       ],
-      video: 'https://www.w3schools.com/html/movie.mp4' // Added sample video
+      video: 'https://www.w3schools.com/html/movie.mp4'
     },
     {
       id: 'midnight-blue',
@@ -222,23 +249,22 @@ const productData = {
         'https://images.unsplash.com/photo-1506220926022-cc5c12acdb35?q=80&w=1500&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1599666505317-7bb0a99c5898?q=80&w=1500&auto=format&fit=crop'
       ],
-      video: 'https://www.w3schools.com/html/mov_bbb.mp4' // Added sample video
+      video: 'https://www.w3schools.com/html/mov_bbb.mp4'
     }
-
   ]
-};
+});
 
 const selectedColorId = ref('black');
 const selectedSize = ref('Medium');
 const quantity = ref(1);
 
 const currentImages = computed(() => {
-  const color = productData.colors.find(c => c.id === selectedColorId.value);
+  const color = productData.value.colors.find(c => c.id === selectedColorId.value);
   return color ? color.images : [];
 });
 
 const currentVideo = computed(() => {
-  const color = productData.colors.find(c => c.id === selectedColorId.value);
+  const color = productData.value.colors.find(c => c.id === selectedColorId.value);
   return color ? color.video : null;
 });
 
@@ -246,21 +272,19 @@ const handleColorChange = (newColorId) => {
   selectedColorId.value = newColorId;
 };
 
-
 const handleSizeChange = (newSize) => {
   selectedSize.value = newSize;
 };
 
 const totalPrice = computed(() => {
   const qty = Math.max(1, quantity.value);
-  const basePrice = parseFloat(productData.price.replace(/,/g, ''));
-  const discount = productData.discountPercentage || 0;
+  const basePrice = parseFloat(productData.value.price.replace(/,/g, ''));
+  const discount = productData.value.discountPercentage || 0;
   const discountedPrice = basePrice * (1 - discount / 100);
   return (discountedPrice * qty).toFixed(2);
 });
 
 // Similar Products Logic
-const { generateProducts } = useProducts();
 const similarProducts = generateProducts(10); // Mock 10 products
 
 const similarProductConfig = {

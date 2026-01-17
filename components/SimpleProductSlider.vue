@@ -1,7 +1,7 @@
 <template>
   <BaseSlider :config="config" :custom-class="customClass">
     <SwiperSlide v-for="item in items" :key="item.id" class="h-auto">
-      <div class="product-item-wrap position-relative h-100">
+      <div class="product-item-wrap position-relative h-100" @click="$emit('item-click', item)">
         <NuxtLink to="/product-details" class="text-decoration-none">
           <div class="product-title-sm d-flex flex-column gap-2 product-show-design-1 zoom h-100" dir="ltr">
             <img :src="item.image" alt="img" class="w-100">
@@ -22,6 +22,8 @@
 import { SwiperSlide } from 'swiper/vue';
 
 const { toggleWishlist, isInWishlist } = useWishlist();
+
+const emit = defineEmits(['item-click']);
 
 defineProps({
   items: {

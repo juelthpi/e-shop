@@ -75,7 +75,7 @@
               :class="['swatch', { active: selectedColorId === color.id }]"
               @click="$emit('color-selected', color.id)"
             >
-              <img :src="color.swatchImg" :alt="color.name" />
+              <img :src="color.images?.[0] || color.swatchImg" :alt="color.name" />
             </div>
           </div>
         </div>
@@ -162,7 +162,8 @@ const selectedColorName = computed(() => {
 
 const formattedPrice = computed(() => {
   const quantity = Math.max(1, props.quantity);
-  const basePrice = parseFloat(props.product.price.replace(/,/g, ''));
+  const basePrice = parseFloat(props.product.price.toString().replace(/,/g, ''));
+  // If we have discountPercentage, apply it. Otherwise use the price as is.
   const discount = props.product.discountPercentage || 0;
   const discountedPrice = basePrice * (1 - discount / 100);
   return (discountedPrice * quantity).toFixed(2);
@@ -170,7 +171,7 @@ const formattedPrice = computed(() => {
 
 const originalTotalPrice = computed(() => {
   const quantity = Math.max(1, props.quantity);
-  const basePrice = parseFloat(props.product.price.replace(/,/g, ''));
+  const basePrice = parseFloat(props.product.price.toString().replace(/,/g, ''));
   return (basePrice * quantity).toFixed(2);
 });
 
@@ -315,9 +316,9 @@ hr {
 }
 
 .section-label {
-  font-size: 14px;
+  font-size: 1.4rem;
   font-weight: 700;
-  margin-bottom: 10px;
+  margin-bottom: 1rem;
   color: #0f1111;
 }
 
@@ -329,13 +330,13 @@ hr {
 }
 
 .swatch {
-  width: 45px;
-  height: 45px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  width: 4.5rem;
+  height: 4.5rem;
+  border: 0.1rem solid #ddd;
+  border-radius: 0.4rem;
   overflow: hidden;
   cursor: pointer;
-  padding: 2px;
+  padding: 0.2rem;
   transition: all 0.2s;
 }
 
@@ -376,17 +377,17 @@ hr {
 }
 
 .size-box {
-  min-width: 45px;
-  height: 35px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  min-width: 4.5rem;
+  height: 3.5rem;
+  border: 0.1rem solid #ddd;
+  border-radius: 0.4rem;
   background-color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  padding: 0 10px;
-  font-size: 13px;
+  padding: 0 1rem;
+  font-size: 1.3rem;
   transition: all 0.2s;
 }
 
@@ -411,17 +412,17 @@ hr {
 .quantity-selector {
   display: flex;
   align-items: center;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 0.1rem solid #ddd;
+  border-radius: 0.4rem;
   width: fit-content;
 }
 
 .qty-btn {
-  width: 35px;
-  height: 35px;
+  width: 3.5rem;
+  height: 3.5rem;
   background: #f0f2f2;
   border: none;
-  font-size: 18px;
+  font-size: 1.8rem;
   cursor: pointer;
 }
 
@@ -430,13 +431,13 @@ hr {
 }
 
 .qty-input {
-  width: 50px;
-  height: 35px;
+  width: 5rem;
+  height: 3.5rem;
   border: none;
-  border-left: 1px solid #ddd;
-  border-right: 1px solid #ddd;
+  border-left: 0.1rem solid #ddd;
+  border-right: 0.1rem solid #ddd;
   text-align: center;
-  font-size: 14px;
+  font-size: 1.4rem;
   outline: none;
   /* Hide arrows */
   -moz-appearance: textfield;
